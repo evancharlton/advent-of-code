@@ -17,10 +17,18 @@ const getMasses = () => {
   });
 };
 
+const getFuel = mass => {
+  const fuel = Math.floor(mass / 3) - 2;
+  if (fuel < 0) {
+    return 0;
+  }
+  return fuel + getFuel(fuel);
+};
+
 getMasses()
   .then(masses => {
     return masses.reduce((tot, mass) => {
-      return tot + (Math.floor(mass / 3) - 2);
+      return tot + getFuel(mass);
     }, 0);
   })
   .then(total => {
