@@ -12,6 +12,7 @@ const walk = (wire, grid, onIntersection) => {
   const newGrid = { ...grid };
   let x = 0;
   let y = 0;
+  let steps = 1;
   wire.forEach(instruction => {
     const distance = +instruction.substr(1);
     let deltaX = 0;
@@ -36,10 +37,14 @@ const walk = (wire, grid, onIntersection) => {
       const key = `${x + deltaX * i},${y + deltaY * i}`;
       if (newGrid[key]) {
         onIntersection(x + deltaX * i, y + deltaY * i);
-        newGrid[key] = "X";
+        newGrid[key] = { char: "X", steps: newGrid[key].steps + steps };
       } else {
-        newGrid[key] = SYMBOLS[direction];
+        newGrid[key] = {
+          char: SYMBOLS[direction],
+          steps
+        };
       }
+      steps += 1;
     }
 
     x += deltaX * distance;
@@ -49,7 +54,7 @@ const walk = (wire, grid, onIntersection) => {
 };
 
 const findIntersections = ([wire1, wire2]) => {
-  const grid = { "0,0": "O" };
+  const grid = { "0,0": { char: "O" } };
   const intersections = [];
   const wire1Grid = walk(wire1, grid, (x, y) => {
     console.log("intersection @", x, y);
@@ -98,7 +103,7 @@ const printGrid = grid => {
     const [x, y] = xy.split(",").map(Number);
     const row = y + Math.abs(bounds.minY);
     const col = x + Math.abs(bounds.minX);
-    const char = grid[xy];
+    const { char } = grid[xy];
     arrayGrid[row][col] = char;
   });
 
@@ -125,7 +130,9 @@ readLines("./day-3/input")
   .then(input => {
     const [grid, intersections] = input;
     const [closest] = intersections
-      .map(manhattanDistance)
+      .map(({ x, y }) => {
+        return grid[`${x},${y}`].steps;
+      })
       .sort((a, b) => a - b);
     console.log("Closest intersection @", closest);
     return printGrid(grid);
