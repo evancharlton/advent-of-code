@@ -1,24 +1,25 @@
-const doubleDigits = chars => {
-  for (let i = 1; i < chars.length; i += 1) {
-    if (chars[i - 1] === chars[i]) {
-      return true;
-    }
-  }
-  return false;
+const doubleDigits = input => {
+  return !!String(input)
+    .replace(/(000+|111+|222+|333+|444+|555+|666+|777+|888+|999+)/g, "")
+    .match(/(00|11|22|33|44|55|66|77|88|99)/);
 };
 
-const increasing = chars => {
-  return chars.join("") === [...chars].sort().join("");
+const increasing = input => {
+  return (
+    String(input) ===
+    String(input)
+      .split("")
+      .sort()
+      .join("")
+  );
 };
 
 const isValid = input => {
-  const chars = String(input).split("");
-
-  if (!doubleDigits(chars)) {
+  if (!doubleDigits(input)) {
     return false;
   }
 
-  if (!increasing(chars)) {
+  if (!increasing(input)) {
     return false;
   }
 
