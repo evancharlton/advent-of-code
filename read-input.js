@@ -1,7 +1,13 @@
 const fs = require("fs");
 const readline = require("readline");
 
-const readLines = path => {
+const readLines = (path, input) => {
+  if (input) {
+    if (Array.isArray(input)) {
+      return Promise.resolve(input);
+    }
+    return Promise.resolve([input]);
+  }
   return new Promise(resolve => {
     const lines = [];
     readline
