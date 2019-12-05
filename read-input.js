@@ -15,7 +15,6 @@ const readLines = (path, input) => {
         input: fs.createReadStream(path)
       })
       .on("line", line => {
-        console.log(line);
         lines.push(line);
       })
       .on("close", () => {
