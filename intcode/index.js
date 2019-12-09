@@ -1,4 +1,4 @@
-const readLines = require("../read-input");
+const DEBUG = false;
 
 const processInstruction = ins => {
   const s = String(ins);
@@ -36,58 +36,99 @@ const processInstruction = ins => {
   };
 };
 
-const getValue = (memory, parameter, mode) => {
-  if (+mode === 1) {
-    // Immediate mode
-    return +parameter;
-  } else {
-    // Position mode
-    return +memory[parameter];
-  }
-};
+const M = ["P", "I", "R"];
 
 const execute = async (program, getInput, onOutput) => {
   const memory = program.split(",").map(v => +v);
   let i = 0;
+  let relativeBase = 0;
+
+  const getValue = (parameter, mode) => {
+    let value = 0;
+    if (mode === 2) {
+      // Relative mode
+      value = memory[parameter + relativeBase] || 0;
+    } else if (mode === 1) {
+      // Immediate mode
+      value = parameter;
+    } else {
+      // Position mode
+      value = memory[parameter] || 0;
+    }
+    return value || 0;
+  };
+
+  const setValue = (parameter, mode, value) => {
+    let address = 0;
+    switch (+mode) {
+      case 2:
+        // Relative mode
+        address = parameter + relativeBase;
+        break;
+      case 1:
+        // Immediate mode
+        address = memory[parameter] || 0;
+        break;
+      case 0:
+        // Position mode
+        address = parameter;
+        break;
+      default:
+        throw new Error(`Unknown mode: ${mode}`);
+    }
+    memory[address] = value;
+  };
+
   while (true) {
     if (i >= memory.length) {
       throw new Error(`i (${i}) >= memory.length (${memory.length})`);
     }
+    if (DEBUG) {
+      console.log(memory.join(","));
+      console.log(`\ti = ${i}\t\trelative_base = ${relativeBase}`);
+    }
+
     const instruction = memory[i++];
     const { mode3, mode2, mode1, opcode } = processInstruction(instruction);
+    if (DEBUG) {
+      console.log(
+        `\topcode = ${opcode}\tmodes: ${M[mode1]} ${M[mode2]} ${M[mode3]}`
+      );
+    }
+
     switch (+opcode) {
       // Add
       case 1: {
-        const oneVal = getValue(memory, memory[i++], mode1);
-        const twoVal = getValue(memory, memory[i++], mode2);
+        const oneVal = getValue(memory[i++], mode1);
+        const twoVal = getValue(memory[i++], mode2);
         const result = oneVal + twoVal;
-        memory[memory[i++]] = result;
+        setValue(memory[i++], mode3, result);
         break;
       }
       // Multiply
       case 2: {
-        const oneVal = getValue(memory, memory[i++], mode1);
-        const twoVal = getValue(memory, memory[i++], mode2);
+        const oneVal = getValue(memory[i++], mode1);
+        const twoVal = getValue(memory[i++], mode2);
         const result = oneVal * twoVal;
-        memory[memory[i++]] = result;
+        setValue(memory[i++], mode3, result);
         break;
       }
       // Input
       case 3: {
-        const inputLocation = memory[i++];
-        memory[inputLocation] = await getInput();
+        const result = await getInput();
+        setValue(memory[i++], mode1, result);
         break;
       }
       // Output
       case 4: {
-        const output = getValue(memory, memory[i++], mode1);
+        const output = getValue(memory[i++], mode1);
         onOutput(output);
         break;
       }
       // jump-if-true
       case 5: {
-        const firstVal = getValue(memory, memory[i++], mode1);
-        const jumpTo = getValue(memory, memory[i++], mode2);
+        const firstVal = getValue(memory[i++], mode1);
+        const jumpTo = getValue(memory[i++], mode2);
         if (firstVal !== 0) {
           i = jumpTo;
         }
@@ -95,8 +136,8 @@ const execute = async (program, getInput, onOutput) => {
       }
       // jump-if-false
       case 6: {
-        const firstVal = getValue(memory, memory[i++], mode1);
-        const jumpTo = getValue(memory, memory[i++], mode2);
+        const firstVal = getValue(memory[i++], mode1);
+        const jumpTo = getValue(memory[i++], mode2);
         if (firstVal === 0) {
           i = jumpTo;
         }
@@ -104,18 +145,24 @@ const execute = async (program, getInput, onOutput) => {
       }
       // less than
       case 7: {
-        const firstVal = getValue(memory, memory[i++], mode1);
-        const secondVal = getValue(memory, memory[i++], mode2);
-        const thirdVal = getValue(memory, memory[i++], 1);
-        memory[thirdVal] = firstVal < secondVal ? 1 : 0;
+        const firstVal = getValue(memory[i++], mode1);
+        const secondVal = getValue(memory[i++], mode2);
+        const result = firstVal < secondVal ? 1 : 0;
+        setValue(memory[i++], mode3, result);
         break;
       }
       // equals
       case 8: {
-        const firstVal = getValue(memory, memory[i++], mode1);
-        const secondVal = getValue(memory, memory[i++], mode2);
-        const thirdVal = getValue(memory, memory[i++], 1);
-        memory[thirdVal] = firstVal === secondVal ? 1 : 0;
+        const firstVal = getValue(memory[i++], mode1);
+        const secondVal = getValue(memory[i++], mode2);
+        const result = firstVal === secondVal ? 1 : 0;
+        setValue(memory[i++], mode3, result);
+        break;
+      }
+      // adjust relative base
+      case 9: {
+        const adjustment = getValue(memory[i++], mode1);
+        relativeBase += adjustment;
         break;
       }
       // Terminate
