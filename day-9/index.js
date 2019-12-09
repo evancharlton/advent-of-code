@@ -8,7 +8,7 @@ readLines("./day-9/input", TEST)
     const outputs = [];
     return intcode(
       program,
-      () => 1,
+      () => 2,
       output => {
         outputs.push(output);
       }
