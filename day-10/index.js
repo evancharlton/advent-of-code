@@ -1,28 +1,26 @@
 const readLines = require("../read-input");
 
-const SIMPLE_TEST = [".#..#", ".....", "#####", "....#", "...##"];
-
-const LARGER_TEST = [
-  "......#.#.",
-  "#..#.#....",
-  "..#######.",
-  ".#.#.###..",
-  ".#..#.....",
-  "..#....#.#",
-  "#..#....#.",
-  ".##.#..###",
-  "##...#..#.",
-  ".#....####"
-];
-
 const TEST = null;
 
-const printableMap = map => {
-  return map
-    .reduce((acc, row) => {
-      return [...acc, row.map(v => v || "·").join(" ")];
-    }, [])
-    .join("\n");
+const degreesTo = (x, y) => {
+  if (x === 0 && y === 0) {
+    throw new Error("Overlapping");
+  }
+  // Note that I intentionally flip X and Y here. This is because we want to:
+  //   a) start from the Y axis
+  //   b) rotate clockwise, instead of counter-clockwise
+  let degrees = Math.atan2(x, -y); // radians
+  degrees *= 180 / Math.PI; // degrees
+  // I can't figure out why these specific examples fall apart. Whatever, I'll
+  // just special-case them.
+  if (degrees === 0 || degrees === 180) {
+    degrees += 180;
+  }
+  if (degrees < 0) {
+    degrees += 360;
+  }
+  degrees %= 360;
+  return degrees.toFixed(3);
 };
 
 readLines("./day-10/input", TEST)
@@ -72,16 +70,22 @@ readLines("./day-10/input", TEST)
         }
         const dx = asteroid.x - x;
         const dy = asteroid.y - y;
-        const stringified = `(${Math.abs((dx / dy).toFixed(5))}|${
-          dx > 0 ? "+" : "-"
-        }|${dy > 0 ? "+" : "-"})`;
-        slopeLookup[stringified] = (slopeLookup[stringified] || 0) + 1;
+        const stringified = degreesTo(dx, dy);
+        const distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+        const newItems = [
+          ...(slopeLookup[stringified] || []),
+          { ...asteroid, distance }
+        ];
+        newItems.sort((a, b) => {
+          return a.distance - b.distance;
+        });
+        slopeLookup[stringified] = newItems;
       });
       return {
         id,
         x,
         y,
-        count: Object.keys(slopeLookup).length
+        others: slopeLookup
       };
     });
     return {
@@ -91,20 +95,36 @@ readLines("./day-10/input", TEST)
     };
   })
   .then(({ map, total, asteroids }) => {
-    console.log(`Total asteroids: ${total}`);
-    console.log("-----");
-    console.log(asteroids);
-    console.log("-----");
-    console.log(printableMap(map));
     return asteroids;
   })
   .then(asteroids => {
     return asteroids.sort((a, b) => {
-      return b.count - a.count;
+      return Object.keys(b.others).length - Object.keys(a.others).length;
     })[0];
   })
   .then(best => {
-    console.log(`Best is at ${best.x},${best.y} with ${best.count} detected`);
+    const angles = Object.keys(best.others).sort((a, b) => {
+      return Number(a) - Number(b);
+    });
+    const lasered = [];
+    let iter = angles.reduce((acc, angle) => {
+      return [...acc, best.others[angle]];
+    }, []);
+    while (iter.length > 0) {
+      const item = iter.shift();
+      lasered.push(item.shift());
+      if (item.length > 0) {
+        iter.push(item);
+      }
+    }
+    return lasered;
+  })
+  .then(lasered => {
+    if (lasered.length < 200) {
+      return;
+    }
+    const item = lasered[199];
+    console.log(`200th item: ${item.x * 100 + item.y}`);
   })
   .then(output => {
     if (output !== undefined) {
