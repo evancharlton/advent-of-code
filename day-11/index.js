@@ -10,7 +10,7 @@ const c = color => {
 
 readLines("./day-11/input", TEST)
   .then(([program]) => {
-    const grid = {};
+    const grid = { "0,0": 1 };
 
     const position = {
       x: 0,
@@ -150,52 +150,52 @@ readLines("./day-11/input", TEST)
         throw ex;
       });
   })
-  // .then(grid => {
-  //   const width = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
-  //   const height = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
-  //   Object.keys(grid).forEach(xy => {
-  //     const [x, y] = xy.split(",");
-  //     width[0] = Math.min(x, width[0]);
-  //     width[1] = Math.max(x, width[1]);
-  //     height[0] = Math.min(y, height[0]);
-  //     height[1] = Math.max(y, height[1]);
-  //   });
+  .then(grid => {
+    const width = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
+    const height = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
+    Object.keys(grid).forEach(xy => {
+      const [x, y] = xy.split(",");
+      width[0] = Math.min(x, width[0]);
+      width[1] = Math.max(x, width[1]);
+      height[0] = Math.min(y, height[0]);
+      height[1] = Math.max(y, height[1]);
+    });
 
-  //   console.log(width, height);
+    console.log(width, height);
 
-  //   const dx = width[1] - width[0];
-  //   const dy = height[1] - height[0];
+    const dx = width[1] - width[0];
+    const dy = height[1] - height[0];
 
-  //   const output = [];
-  //   for (let y = 0; y < dy + 1; y += 1) {
-  //     output.push([]);
-  //     for (let x = 0; x < dx + 1; x += 1) {
-  //       output[y].push(" ");
-  //     }
-  //   }
+    const output = [];
+    for (let y = 0; y < dy + 1; y += 1) {
+      output.push([]);
+      for (let x = 0; x < dx + 1; x += 1) {
+        output[y].push(" ");
+      }
+    }
 
-  //   console.log(`width: ${dx}\theight:${dy}`);
+    console.log(`width: ${dx}\theight:${dy}`);
 
-  //   Object.keys(grid).forEach(xy => {
-  //     const [x, y] = xy.split(",");
-  //     const row = y - height[0];
-  //     const col = x - width[0];
-  //     try {
-  //       output[row][col] = grid[xy];
-  //     } catch (ex) {
-  //       console.error(x, "-", width[0], "=", col);
-  //       console.error(y, "-", height[0], "=", row);
-  //       throw ex;
-  //     }
-  //   });
-  //   return output;
-  // })
-  // .then(grid => {
-  //   return grid.map(row => row.join(" ")).join("\n");
-  // })
-  // .then(str => {
-  //   fs.writeFileSync("./output", str);
-  // })
+    Object.keys(grid).forEach(xy => {
+      const [x, y] = xy.split(",");
+      const row = y - height[0];
+      const col = x - width[0];
+      try {
+        output[row][col] = grid[xy];
+      } catch (ex) {
+        console.error(x, "-", width[0], "=", col);
+        console.error(y, "-", height[0], "=", row);
+        throw ex;
+      }
+    });
+    return output;
+  })
+  .then(grid => {
+    return grid.map(row => row.map(v => [" ", "#"][v]).join(" ")).join("\n");
+  })
+  .then(str => {
+    fs.writeFileSync("./output", str);
+  })
   .then(output => {
     if (output !== undefined) {
       if (Array.isArray(output) || typeof output === "object") {
