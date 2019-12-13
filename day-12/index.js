@@ -1,11 +1,18 @@
 const readLines = require("../read-input");
 
-const TEST = false && [
-  "<x=-1, y=0, z=2>",
-  "<x=2, y=-10, z=-7>",
-  "<x=4, y=-8, z=8>",
-  "<x=3, y=5, z=-1>"
-];
+// const TEST = (false &&
+//   // first example
+//   false && [
+//     "<x=-1, y=0, z=2>",
+//     "<x=2, y=-10, z=-7>",
+//     "<x=4, y=-8, z=8>",
+//     "<x=3, y=5, z=-1>"
+//   ]) || [
+//   "<x=-8, y=-10, z=0>",
+//   "<x=5, y=5, z=10>",
+//   "<x=2, y=-7, z=3>",
+//   "<x=9, y=-8, z=-3>"
+// ];
 
 const printVal = num => {
   return num < 0 ? String(num) : ` ${num}`;
@@ -17,6 +24,10 @@ const printPosition = ({ x, y, z }) => {
 
 const printVelocity = ({ x, y, z }) => {
   return `vel=<x=${printVal(x)}, y=${printVal(y)}, z=${printVal(z)}>`;
+};
+
+const serialize = (moon, axis) => {
+  return [moon.position[axis], moon.velocity[axis]].join("");
 };
 
 const printMoons = moons => {
@@ -52,7 +63,51 @@ const sum = ({ x, y, z }) => {
   return Math.abs(x) + Math.abs(y) + Math.abs(z);
 };
 
-readLines("./day-12/input", TEST)
+const findCyclesOnAxis = (moons, axis) => {
+  let i = 0;
+
+  const initialState = moons.map(m => serialize(m, axis)).join(" / ");
+
+  const moonPairs = moons.map(moon => moons.filter(m => m.id !== moon.id));
+
+  let lastMillionTimestamp = Date.now();
+
+  do {
+    // console.log(`After ${i++} steps:`);
+    // printMoons(moons);
+    if (i % 1000000 === 0) {
+      console.log(
+        `Checked ${i} times (took ${(
+          (Date.now() - lastMillionTimestamp) /
+          1000
+        ).toFixed(3)} sec)`
+      );
+      lastMillionTimestamp = Date.now();
+    }
+
+    // Apply gravity
+    const velocities = moons.map((moon, i) => {
+      return applyGravity(moon, moonPairs[i]);
+    });
+
+    // Apply the velocity to the position
+    velocities.forEach((velocity, i) => {
+      moons[i].position.x += velocity.x;
+      moons[i].position.y += velocity.y;
+      moons[i].position.z += velocity.z;
+      moons[i].velocity = velocity;
+    });
+
+    i += 1;
+
+    const serialized = moons.map(m => serialize(m, axis)).join(" / ");
+    if (serialized === initialState) {
+      return i;
+    }
+  } while (true);
+};
+
+readLines("./day-12/input", false)
   .then(lines => {
     return lines.map((line, i) => {
       const [x, y, z] = line
@@ -69,38 +124,22 @@ readLines("./day-12/input", TEST)
     });
   })
   .then(moons => {
-    let i = 0;
-    do {
-      console.log(`After ${i++} steps:`);
-      printMoons(moons);
-      if (i > 1000) {
-        return moons;
-      }
-
-      // Apply gravity
-      const velocities = moons.map(moon => {
-        return applyGravity(
-          moon,
-          moons.filter(m => m.id !== moon.id)
-        );
-      });
-
-      // Apply the velocity to the position
-      velocities.forEach((velocity, i) => {
-        moons[i].position.x += velocity.x;
-        moons[i].position.y += velocity.y;
-        moons[i].position.z += velocity.z;
-        moons[i].velocity = velocity;
-      });
-    } while (true);
+    const [x, y, z] = [
+      findCyclesOnAxis(moons, "x"),
+      findCyclesOnAxis(moons, "y"),
+      findCyclesOnAxis(moons, "z")
+    ];
+    // I'm too lazy to write an LCM function. I'll just put this into
+    // wolframalpha instead.
+    return [x, y, z];
   })
-  .then(moons => {
-    return moons.reduce((total, moon) => {
-      const pot = sum(moon.position);
-      const kin = sum(moon.velocity);
-      return total + pot * kin;
-    }, 0);
-  })
+  // .then(moons => {
+  //   return moons.reduce((total, moon) => {
+  //     const pot = sum(moon.position);
+  //     const kin = sum(moon.velocity);
+  //     return total + pot * kin;
+  //   }, 0);
+  // })
   .then(output => {
     if (output !== undefined) {
       if (Array.isArray(output) || typeof output === "object") {
