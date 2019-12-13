@@ -4,14 +4,36 @@ const intcode = require("../intcode");
 readLines("./day-13/input")
   .then(async ([program]) => {
     const tiles = {};
+    let score = 0;
     const tile = {
       left: undefined,
       top: undefined,
       tileId: undefined
     };
+    const ball = {
+      left: undefined,
+      top: undefined
+    };
+    const paddle = {
+      left: undefined,
+      top: undefined
+    };
     await intcode(
-      program,
-      () => 0,
+      // Free games!
+      `2,${program.substr(program.indexOf(",") + 1)}`,
+      () => {
+        if (
+          ball.left === undefined ||
+          paddle.left === undefined ||
+          ball.left === paddle.left
+        ) {
+          return 0;
+        }
+        if (ball.left > paddle.left) {
+          return 1;
+        }
+        return -1;
+      },
       out => {
         if (tile.left === undefined) {
           tile.left = out;
@@ -25,8 +47,18 @@ readLines("./day-13/input")
 
         if (tile.tileId !== undefined) {
           // Flush the tile
-          if (tile.tileId !== 0) {
+          if (tile.left === -1 && tile.top === 0) {
+            score = tile.tileId;
+          } else if (tile.tileId !== 0) {
             tiles[`${tile.left},${tile.top}`] = tile.tileId;
+          }
+
+          if (tile.tileId === 3) {
+            paddle.left = tile.left;
+            paddle.top = tile.top;
+          } else if (tile.tileId === 4) {
+            ball.left = tile.left;
+            ball.top = tile.top;
           }
           tile.left = undefined;
           tile.top = undefined;
@@ -34,9 +66,7 @@ readLines("./day-13/input")
         }
       }
     );
-    return Object.keys(tiles)
-      .map(k => tiles[k])
-      .filter(tileId => tileId === 2).length;
+    return score;
   })
   .then(output => {
     if (output !== undefined) {
