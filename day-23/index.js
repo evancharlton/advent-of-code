@@ -3,23 +3,46 @@ const intcode = require("../intcode");
 
 readLines("./day-23/input")
   .then(async ([program]) => {
-    const queues = {};
+    const queues = [];
+
+    let lastY = undefined;
+
+    let NAT = undefined;
 
     const handleInput = id => {
       let providedId = false;
       return () => {
-        if (!providedId) {
-          providedId = true;
-          return id;
-        }
+        try {
+          if (!providedId) {
+            providedId = true;
+            return id;
+          }
 
-        if (queues[id].length === 0) {
-          return -1;
+          if (queues[id].length === 0) {
+            return -1;
+          }
+          // const letter = queues[id].length % 2 ? "Y" : "X";
+          const value = queues[id].shift();
+          // console.log(`${id} <-- ${letter}=${value}`);
+          return value;
+        } finally {
+          // A packet was just sent; is the network idle now?
+          if (
+            NAT &&
+            queues.every(queue => {
+              return queue.length === 0;
+            })
+          ) {
+            const { x, y } = NAT;
+            if (lastY === y) {
+              console.warn(y);
+            }
+            lastY = y;
+            console.log(`NAT => 0 X=${x} Y=${y}`);
+            queues[0].push(x, y);
+            NAT = undefined;
+          }
         }
-        const letter = queues[id].length % 2 ? "Y" : "X";
-        const value = queues[id].shift();
-        console.log(`${id} <-- ${letter}=${value}`);
-        return value;
       };
     };
 
@@ -39,16 +62,13 @@ readLines("./day-23/input")
         if (y === undefined) {
           y = output;
         }
-        if (!queues[recipient]) {
-          queues[recipient] = [];
-          console.warn(`${id} --> ${recipient}  X=${x} Y=${y}`);
-        } else {
-          console.log(`${id} --> ${recipient}  X=${x} Y=${y}`);
-        }
-        queues[recipient].push(x);
-        queues[recipient].push(y);
+        // console.log(`${id} --> ${recipient}  X=${x} Y=${y}`);
         if (recipient === 255) {
-          console.log("255: ", y);
+          // console.log(`${id} --> NAT  X=${x} Y=${y}`);
+          // This is the NAT.
+          NAT = { x, y };
+        } else {
+          queues[recipient].push(x, y);
         }
         recipient = undefined;
         x = undefined;
@@ -58,7 +78,7 @@ readLines("./day-23/input")
 
     const computers = [];
     for (let i = 0; i < 50; i += 1) {
-      queues[i] = [];
+      queues.push([]);
       computers.push(intcode(program, handleInput(i), handleOutput(i)));
     }
     await Promise.all(computers);
