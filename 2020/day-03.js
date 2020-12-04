@@ -1,4 +1,4 @@
-const lines = require("./input")(__filename).split("\n");
+const lines = require("./input")(__filename);
 
 const simulate = (deltaX, deltaY) => {
   let treeCount = 0;

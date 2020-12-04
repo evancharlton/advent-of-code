@@ -1,13 +1,6 @@
-const getInput = require("./input");
+const lines = require("./input")(__filename);
 
-const countLetters = (string, letter) => {
-  return string.split("").reduce((count, l) => {
-    return count + (letter === l ? 1 : 0);
-  }, 0);
-};
-
-const input = getInput(__filename)
-  .split("\n")
+const input = lines
   .reduce((acc, line) => {
     const match = line.match(/^([\d]+)-([\d]+) ([a-z]): ([a-z]+)$/);
     if (!match) {

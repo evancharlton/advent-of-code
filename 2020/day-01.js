@@ -1,7 +1,6 @@
-const getInput = require("./input");
+const lines = require("./input")(__filename);
 
-const nums = getInput(__filename)
-  .split("\n")
+const nums = lines
   .map((v) => +v)
   .filter((v) => v < 2020)
   .sort();

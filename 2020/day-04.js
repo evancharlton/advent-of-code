@@ -1,6 +1,4 @@
-const batches = require("./input")(false ? "day-4.test.txt" : __filename).split(
-  "\n\n"
-);
+const batches = require("./input")(__filename, "\n\n");
 
 const EYE_COLORS = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].reduce(
   (acc, v) => ({ ...acc, [v]: true }),
@@ -75,10 +73,5 @@ const passports = batches
       }, {})
   )
   .filter(isValid);
-
-passports.forEach((batch) => {
-  console.log(batch);
-  console.log("-----");
-});
 
 console.log(passports.length);
