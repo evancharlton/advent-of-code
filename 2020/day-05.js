@@ -38,8 +38,14 @@ const getSeatInfo = (input) => {
   return { row, seat, id: row * 8 + seat };
 };
 
-const ids = lines.map(getSeatInfo).sort(({ id: idA }, { id: idB }) => {
-  return idB - idA;
-});
+const plane = lines.map(getSeatInfo).reduce((acc, { row, seat }) => {
+  return {
+    ...acc,
+    [row]: {
+      ...acc[row],
+      [seat]: true,
+    },
+  };
+}, {});
 
-console.log(ids[0]);
+console.table(plane);
