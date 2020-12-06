@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-module.exports = (day, delim = "\n", type = "") => {
+module.exports = (day, delim = "\n", type = process.argv[2]) => {
   let filename = day;
   if (filename.endsWith(".js")) {
     filename = filename

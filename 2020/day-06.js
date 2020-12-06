@@ -1,4 +1,4 @@
-const groups = require("./input")(__filename, "\n\n", process.argv[2]);
+const groups = require("./input")(__filename, "\n\n");
 
 const uniques = groups.map((group) => {
   const responses = group.split("\n").map((line) => line.split(""));
