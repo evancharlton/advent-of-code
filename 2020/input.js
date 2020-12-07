@@ -3,11 +3,12 @@ const path = require("path");
 
 module.exports = (day, delim = "\n", type = process.argv[2]) => {
   let filename = day;
-  if (filename.endsWith(".js")) {
+  if (filename.endsWith(".js") || filename.endsWith(".ts")) {
     filename = filename
       .replace(__dirname, "")
       .replace(/^\//, "")
-      .replace(".js", "");
+      .replace(".js", "")
+      .replace(".ts", "");
   }
 
   filename = [filename, type, "txt"].filter(Boolean).join(".");
