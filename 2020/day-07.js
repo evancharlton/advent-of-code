@@ -23,7 +23,7 @@ lines.forEach((line) => {
     .map((s) => {
       const [_, count, bag] = s.match(/^([\d+]+) (.*)$/);
       return {
-        count,
+        count: +count,
         color: bag,
       };
     });
@@ -34,22 +34,11 @@ lines.forEach((line) => {
   };
 });
 
-const parents = new Set();
-const searches = [MY_BAG];
+const countBags = (color) => {
+  const { contents } = bags[color];
+  return contents.reduce((acc, { count, color }) => {
+    return acc + count + count * countBags(color);
+  }, 0);
+};
 
-while (searches.length > 0) {
-  const search = searches.shift();
-
-  const containers = Object.entries(bags)
-    .filter(([_color, { contents }]) => {
-      return contents.find(({ color: childColor }) => {
-        return childColor === search;
-      });
-    })
-    .map(([color]) => color);
-
-  searches.push(...containers);
-  containers.forEach((c) => parents.add(c));
-}
-
-console.log(parents.size);
+console.log(countBags(MY_BAG, 1));
