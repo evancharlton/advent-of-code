@@ -19,6 +19,12 @@ const compute = (program) => {
 
   while (true) {
     const line = program[pointer];
+    if (!line) {
+      console.log("PROGRAM TERMINATED");
+      console.table({ pointer, accumulator });
+      process.exit(0);
+    }
+
     console.log(`PROG[${pointer}]: ${line}\t\t// ${accumulator}`);
 
     if (visitedPointers.has(pointer)) {
@@ -60,4 +66,21 @@ const compute = (program) => {
   }
 };
 
-compute(lines);
+for (let i = 0; i < lines.length; i += 1) {
+  const line = lines[i];
+  if (!(line.startsWith("jmp") || line.startsWith("nop"))) {
+    continue;
+  }
+
+  const updated = [...lines];
+  if (line.startsWith("jmp")) {
+    updated[i] = line.replace("jmp", "nop");
+  } else if (line.startsWith("nop")) {
+    updated[i] = line.replace("nop", "jmp");
+  }
+
+  try {
+    console.log("=====");
+    compute(updated);
+  } catch (e) {}
+}
