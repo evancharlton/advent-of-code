@@ -21,5 +21,5 @@ module.exports = (day, delim = "\n", type = process.argv[2]) => {
     return contents.split(delim);
   }
 
-  return contents;
+  return contents.filter((l) => !l.startsWith("//"));
 };
