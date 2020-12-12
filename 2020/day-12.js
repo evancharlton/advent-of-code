@@ -1,10 +1,99 @@
 const data = (type = "") => {
   const lines = require("./input")(__filename, "\n", type);
-  return lines;
+  return lines.map((line) => {
+    const [action, ...values] = line;
+    const value = +values.join("");
+    return { action, value };
+  });
 };
 
-const part1 = (lines) => {
-  return undefined;
+const advance = ({ action, value }) => {
+  switch (action) {
+    case "N": // North
+      return { x: 0, y: value };
+    case "S": // South
+      return { x: 0, y: -value };
+    case "E": // East
+      return { x: value, y: 0 };
+    case "W": // West
+      return { x: -value, y: 0 };
+    default:
+      throw new Error(`Unrecognized movement: ${action}`);
+  }
+};
+
+const turn = ({ value }, start) => {
+  // Map the direction back to a number.
+  const facing = directionToAngle(start);
+  const newAngle = facing + value;
+  return angleToDirection(newAngle);
+};
+
+const directionToAngle = (d) => {
+  const angle = {
+    E: 0,
+    S: 90,
+    W: 180,
+    N: 270,
+  }[d];
+  if (angle === undefined) {
+    throw new Error(`Unknown direction: ${d}`);
+  }
+  return angle;
+};
+
+const angleToDirection = (v) => {
+  const direction = {
+    [0]: "E",
+    [90]: "S",
+    [180]: "W",
+    [270]: "N",
+  }[(v + 360) % 360];
+  if (direction === undefined) {
+    throw new Error(`Unknown rotation: ${v}`);
+  }
+  return direction;
+};
+
+const part1 = (actions) => {
+  const ship = {
+    x: 0,
+    y: 0,
+    d: "E",
+  };
+
+  actions.forEach(({ action, value }) => {
+    switch (action) {
+      case "N":
+      case "E":
+      case "S":
+      case "W": {
+        const { x, y } = advance({ action, value });
+        ship.x += x;
+        ship.y += y;
+        break;
+      }
+
+      case "F": {
+        const { x, y } = advance({ action: ship.d, value });
+        ship.x += x;
+        ship.y += y;
+        break;
+      }
+
+      case "R": {
+        // Rotate
+        ship.d = turn({ value }, ship.d);
+        break;
+      }
+      case "L": {
+        ship.d = turn({ value: -value }, ship.d);
+        break;
+      }
+    }
+  });
+
+  return Math.abs(ship.x) + Math.abs(ship.y);
 };
 
 const part2 = (lines) => {
