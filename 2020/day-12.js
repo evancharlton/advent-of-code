@@ -7,7 +7,7 @@ const data = (type = "") => {
   });
 };
 
-const advance = ({ action, value }) => {
+const move = ({ action, value }) => {
   switch (action) {
     case "N": // North
       return { x: 0, y: value };
@@ -22,8 +22,12 @@ const advance = ({ action, value }) => {
   }
 };
 
-const turn = ({ value }, start) => {
+const turn = ({ action, value }, start) => {
   // Map the direction back to a number.
+  if (action === "L") {
+    return turn({ action: "R", value: -value }, start);
+  }
+
   const facing = directionToAngle(start);
   const newAngle = facing + value;
   return angleToDirection(newAngle);
@@ -68,26 +72,23 @@ const part1 = (actions) => {
       case "E":
       case "S":
       case "W": {
-        const { x, y } = advance({ action, value });
+        const { x, y } = move({ action, value });
         ship.x += x;
         ship.y += y;
         break;
       }
 
       case "F": {
-        const { x, y } = advance({ action: ship.d, value });
+        const { x, y } = move({ action: ship.d, value });
         ship.x += x;
         ship.y += y;
         break;
       }
 
-      case "R": {
-        // Rotate
-        ship.d = turn({ value }, ship.d);
-        break;
-      }
+      case "R":
       case "L": {
-        ship.d = turn({ value: -value }, ship.d);
+        // Rotate
+        ship.d = turn({ action, value }, ship.d);
         break;
       }
     }
@@ -96,7 +97,7 @@ const part1 = (actions) => {
   return Math.abs(ship.x) + Math.abs(ship.y);
 };
 
-const MUTATORS = {
+const MUTATIONS = {
   [0]: (w) => w,
   [90]: ({ x, y }) => ({ x: y, y: -x }),
   [180]: ({ x, y }) => ({ x: -x, y: -y }),
@@ -105,9 +106,8 @@ const MUTATORS = {
 
 const rotate = ({ action, value }, { x, y }) => {
   switch (action) {
-    case "R": {
-      return MUTATORS[value]({ x, y });
-    }
+    case "R":
+      return MUTATIONS[value]({ x, y });
 
     case "L":
       return rotate({ action: "R", value: (-value + 360) % 360 }, { x, y });
@@ -135,7 +135,7 @@ const part2 = (actions) => {
       case "E":
       case "S":
       case "W": {
-        const { x, y } = advance({ action, value });
+        const { x, y } = move({ action, value });
         waypoint.x += x;
         waypoint.y += y;
         break;
