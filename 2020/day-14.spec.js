@@ -5,6 +5,7 @@ const {
   convertToBinary,
   apply,
   ZEROED_MEMORY,
+  getOffsets,
 } = require("./day-14");
 
 describe("Day 14", () => {
@@ -39,8 +40,19 @@ describe("Day 14", () => {
   });
 
   describe("Part 2", () => {
+    describe("getOffsets", () => {
+      it("works", () => {
+        expect(getOffsets(42, "000000000000000000000000000000X1001X")).toEqual([
+          26,
+          27,
+          58,
+          59,
+        ]);
+      });
+    });
+
     it("works for test data", () => {
-      expect(part2(data("test"))).toBe(undefined);
+      expect(part2(data("test2"))).toBe(208);
     });
 
     it.skip("works for real data", () => {
