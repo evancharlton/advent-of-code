@@ -3,18 +3,18 @@ const data = (type = "") => {
 };
 
 const part1 = (numbers, limit = 2020) => {
-  const spoken = {};
+  const spoken = new Map();
 
   let said;
   let i = 1;
   numbers.forEach((n, j) => {
-    spoken[n] = [i];
+    spoken.set(n, [i]);
     said = n;
     i += 1;
   });
 
   while (i <= limit) {
-    let [turn, prev] = spoken[said];
+    let [turn, prev] = spoken.get(said) || [];
 
     // Do we have a record of this?
     if (turn === undefined) {
@@ -27,17 +27,22 @@ const part1 = (numbers, limit = 2020) => {
     }
 
     said = turn - prev;
-    [turn] = spoken[said] || [i];
+    [turn] = spoken.get(said) || [i];
 
-    spoken[said] = [i, turn];
+    spoken.set(said, [i, turn]);
     i += 1;
+
+    if (i % 10000 === 0) {
+      console.log(`Still working ... ${i}`);
+    }
   }
 
   return said;
 };
 
 const part2 = (numbers) => {
-  return undefined;
+  // node --max_old_space_size=8192
+  return part1(numbers, 30_000_000);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
