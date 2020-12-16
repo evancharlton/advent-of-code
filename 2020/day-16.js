@@ -27,7 +27,7 @@ function merge(arr) {
   return result;
 }
 
-const parseInfo = (info) => {
+const validRanges = (info) => {
   const ranges = info
     .split("\n")
     .map((line) => {
@@ -41,7 +41,7 @@ const parseInfo = (info) => {
 };
 
 const part1 = ({ info, nearby }) => {
-  const ranges = parseInfo(info);
+  const ranges = validRanges(info);
 
   return nearby
     .split("\n")
@@ -64,8 +64,143 @@ const part1 = ({ info, nearby }) => {
     .reduce((acc, v) => acc + v, 0);
 };
 
-const part2 = (lines) => {
-  return undefined;
+const validTickets = ({ info, nearby }) => {
+  const ranges = validRanges(info);
+
+  return nearby.split("\n").filter((line) => {
+    const isInvalid =
+      line
+        .split(",")
+        .map(Number)
+        .filter((field) => {
+          for (let i = 0; i < ranges.length; i += 1) {
+            const [bottom, top] = ranges[i];
+            if (field >= bottom && field <= top) {
+              return false;
+            }
+          }
+          return true;
+        })
+        .filter(Boolean).length > 0;
+    return !isInvalid;
+  });
+};
+
+const parseInfo = (info) => {
+  return info
+    .split("\n")
+    .map((line) => {
+      const name = line.replace(/:.+$/, "");
+      const ranges = line
+        .replace(/.+: /, "")
+        .split(" or ")
+        .map((range) => {
+          return range.split("-").map(Number);
+        });
+      return { name, ranges };
+    })
+    .reduce(
+      (acc, { name, ranges }) => ({
+        ...acc,
+        [name]: ranges,
+      }),
+      {}
+    );
+};
+
+// Yanked from SO
+function permute(permutation) {
+  var length = permutation.length,
+    result = [permutation.slice()],
+    c = new Array(length).fill(0),
+    i = 1,
+    k,
+    p;
+
+  while (i < length) {
+    if (c[i] < i) {
+      k = i % 2 && c[i];
+      p = permutation[i];
+      permutation[i] = permutation[k];
+      permutation[k] = p;
+      ++c[i];
+      i = 1;
+      result.push(permutation.slice());
+    } else {
+      c[i] = 0;
+      ++i;
+    }
+  }
+  return result;
+}
+
+const makeValidator = (infoMap) => (ticket) => {
+  const entries = Object.entries(ticket);
+  for (let i = 0; i < entries.length; i += 1) {
+    const [name, value] = entries[i];
+    const [[startA, endA], [startB, endB]] = infoMap[name];
+    return (
+      (value >= startA && value <= endA) || (value >= startB && value <= endB)
+    );
+  }
+};
+
+const makeTicket = (line, fieldNames) => {
+  console.log(`line: ${line}`, fieldNames);
+  return line
+    .split(",")
+    .map(Number)
+    .reduce((acc, field, i) => {
+      return {
+        ...acc,
+        [fieldNames[i]]: field,
+      };
+    }, {});
+};
+
+const part2 = ({ info, nearby, yours }) => {
+  if (!yours) {
+    return undefined;
+  }
+
+  const infoMap = parseInfo(info);
+  const isValid = makeValidator(infoMap);
+  const valid = validTickets({ nearby, info });
+
+  const keys = Object.keys(infoMap);
+  console.log(`Making guesses ...`);
+  const allGuesses = permute(keys);
+  console.log(`Have ${allGuesses.length} theories to try ..`);
+
+  let correctGuess = undefined;
+  // Validate each hypothesis
+  for (let i = 0; !correctGuess && i < allGuesses.length; i += 1) {
+    if (i % 100 === 0) {
+      console.log(` ... ${i} being tried`);
+    }
+    const guess = allGuesses[i];
+
+    const yourTicket = makeTicket(yours, guess);
+
+    let validTicket = isValid(yourTicket);
+    for (let j = 0; validTicket && j < validTickets.length; j += 1) {
+      const ticket = makeTicket(valid[i], guess);
+      validTicket = isValid(ticket);
+    }
+
+    if (validTicket) {
+      correctGuess = guess;
+    }
+  }
+
+  if (!correctGuess) {
+    return 0;
+  }
+
+  const yourTicket = makeTicket(yours, correctGuess);
+  return Object.entries(yourTicket)
+    .filter(([key]) => key.startsWith("departure"))
+    .reduce((acc, [_, value]) => acc * value, 1);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
@@ -346,6 +481,7 @@ module.exports = {
   data,
   part1,
   part2,
-  parseInfo,
+  validRanges,
   merge,
+  validTickets,
 };
