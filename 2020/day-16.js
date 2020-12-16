@@ -37,11 +37,11 @@ const validRanges = (info) => {
         .map((range) => range.split("-").map(Number));
     })
     .flat();
-  return merge(ranges);
+  return ranges;
 };
 
 const part1 = ({ info, nearby }) => {
-  const ranges = validRanges(info);
+  const ranges = merge(validRanges(info));
 
   return nearby
     .split("\n")
@@ -68,21 +68,19 @@ const validTickets = ({ info, nearby }) => {
   const ranges = validRanges(info);
 
   return nearby.split("\n").filter((line) => {
-    const isInvalid =
-      line
-        .split(",")
-        .map(Number)
-        .filter((field) => {
-          for (let i = 0; i < ranges.length; i += 1) {
-            const [bottom, top] = ranges[i];
-            if (field >= bottom && field <= top) {
-              return false;
-            }
+    return line
+      .split(",")
+      .map(Number)
+      .every((field) => {
+        for (let i = 0; i < ranges.length; i += 1) {
+          const [a, b] = ranges[i];
+          const isValid = field >= a && field <= b;
+          if (isValid) {
+            return true;
           }
-          return true;
-        })
-        .filter(Boolean).length > 0;
-    return !isInvalid;
+        }
+        return false;
+      });
   });
 };
 
@@ -108,99 +106,85 @@ const parseInfo = (info) => {
     );
 };
 
-// Yanked from SO
-function permute(permutation) {
-  var length = permutation.length,
-    result = [permutation.slice()],
-    c = new Array(length).fill(0),
-    i = 1,
-    k,
-    p;
-
-  while (i < length) {
-    if (c[i] < i) {
-      k = i % 2 && c[i];
-      p = permutation[i];
-      permutation[i] = permutation[k];
-      permutation[k] = p;
-      ++c[i];
-      i = 1;
-      result.push(permutation.slice());
-    } else {
-      c[i] = 0;
-      ++i;
-    }
-  }
-  return result;
-}
-
-const makeValidator = (infoMap) => (ticket) => {
-  const entries = Object.entries(ticket);
-  for (let i = 0; i < entries.length; i += 1) {
-    const [name, value] = entries[i];
-    const [[startA, endA], [startB, endB]] = infoMap[name];
-    return (
-      (value >= startA && value <= endA) || (value >= startB && value <= endB)
-    );
-  }
-};
-
-const makeTicket = (line, fieldNames) => {
-  console.log(`line: ${line}`, fieldNames);
-  return line
-    .split(",")
-    .map(Number)
-    .reduce((acc, field, i) => {
-      return {
-        ...acc,
-        [fieldNames[i]]: field,
-      };
-    }, {});
-};
-
 const part2 = ({ info, nearby, yours }) => {
   if (!yours) {
     return undefined;
   }
 
   const infoMap = parseInfo(info);
-  const isValid = makeValidator(infoMap);
-  const valid = validTickets({ nearby, info });
+  const infoEntries = Object.entries(infoMap);
 
-  const keys = Object.keys(infoMap);
-  console.log(`Making guesses ...`);
-  const allGuesses = permute(keys);
-  console.log(`Have ${allGuesses.length} theories to try ..`);
+  const possibleTickets = validTickets({ nearby, info }).map((line) =>
+    line.split(",").map(Number)
+  );
+  const yt = yours.split(",").map(Number);
+  possibleTickets.unshift(yt);
 
-  let correctGuess = undefined;
-  // Validate each hypothesis
-  for (let i = 0; !correctGuess && i < allGuesses.length; i += 1) {
-    if (i % 100 === 0) {
-      console.log(` ... ${i} being tried`);
-    }
-    const guess = allGuesses[i];
+  const fieldValues = possibleTickets
+    .reduce((acc, ticket) => {
+      if (acc.length === 0) {
+        return ticket.map((field) => [field]);
+      }
+      for (let i = 0; i < ticket.length; i += 1) {
+        acc[i].push(ticket[i]);
+      }
+      return acc;
+    }, [])
+    .map((fields) => fields.sort((a, b) => +a - +b));
 
-    const yourTicket = makeTicket(yours, guess);
+  const possibilities = [];
 
-    let validTicket = isValid(yourTicket);
-    for (let j = 0; validTicket && j < validTickets.length; j += 1) {
-      const ticket = makeTicket(valid[i], guess);
-      validTicket = isValid(ticket);
-    }
-
-    if (validTicket) {
-      correctGuess = guess;
-    }
+  for (let i = 0; i < fieldValues.length; i += 1) {
+    const values = fieldValues[i];
+    const options = infoEntries.filter(([_, [[a, b], [c, d]]]) => {
+      const allMatch = values.every((val) => {
+        return (val >= a && val <= b) || (val >= c && val <= d);
+      });
+      return allMatch;
+    });
+    possibilities[i] = options.map(([key]) => key);
   }
 
-  if (!correctGuess) {
-    return 0;
+  let limit = 0;
+  let answer = possibilities.map((opt) => [...opt]);
+
+  const locations = {};
+  answer.forEach((options, i) => {
+    options.forEach((option) => {
+      locations[option] = locations[option] || [];
+      locations[option].push(i);
+    });
+  });
+
+  while (
+    limit++ < 500000 &&
+    Object.values(locations).some((loc) => loc.length > 1)
+  ) {
+    if (limit % 100 === 0) {
+      console.log(`iteration ${limit}`);
+    }
+    Object.entries(locations).forEach(([name, locs]) => {
+      if (locs.length === 1) {
+        // Great, this is known.
+        const [position] = locs;
+        answer[position] = name;
+        Object.entries(locations)
+          .filter(([name2]) => name2 !== name)
+          .forEach(([name2, locs2]) => {
+            locations[name2] = locs2.filter((v) => v !== position);
+          });
+      }
+    });
   }
 
-  const yourTicket = makeTicket(yours, correctGuess);
-  return Object.entries(yourTicket)
-    .filter(([key]) => key.startsWith("departure"))
-    .reduce((acc, [_, value]) => acc * value, 1);
+  const deps = Object.entries(locations)
+    .filter(([name]) => name.startsWith("departure"))
+    .map(([_, v]) => v)
+    .flat()
+    .map((i) => yt[i])
+    .reduce((acc, v) => acc * v, 1);
+
+  return deps;
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {

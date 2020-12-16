@@ -77,13 +77,7 @@ seat: 13-40 or 45-50
     });
   });
 
-  describe("Part 2", () => {
-    describe("validTickets", () => {
-      it("works", () => {
-        expect(validTickets(PART_1_DATA)).toHaveLength(1);
-      });
-    });
-
+  describe.only("Part 2", () => {
     it("works for test data", () => {
       expect(part2(PART_2_DATA)).toBe(1);
     });
