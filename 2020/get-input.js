@@ -23,7 +23,7 @@ const out = fs.createWriteStream(path.resolve(path.join(__dirname, name)));
 console.log(`Fetching input into ${name}`);
 
 http.get(
-  "https://adventofcode.com/2020/day/13/input",
+  `https://adventofcode.com/2020/day/${date}/input`,
   {
     headers: {
       cookie: `session=${process.env.AOC_COOKIE}`,
