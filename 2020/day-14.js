@@ -129,8 +129,6 @@ const part2 = (lines) => {
     });
   });
 
-  console.log(memory);
-
   return (
     Object.values(memory)
       .filter(Boolean)

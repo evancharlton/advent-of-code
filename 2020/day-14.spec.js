@@ -14,8 +14,8 @@ describe("Day 14", () => {
       expect(part1(data("test"))).toBe(165);
     });
 
-    it.skip("works for real data", () => {
-      expect(part1(data())).toBe(4938);
+    it("works for real data", () => {
+      expect(part1(data())).toBe(2346881602152);
     });
   });
 
@@ -55,8 +55,8 @@ describe("Day 14", () => {
       expect(part2(data("test2"))).toBe(208);
     });
 
-    it.skip("works for real data", () => {
-      expect(part2(data())).toBe(undefined);
+    it("works for real data", () => {
+      expect(part2(data())).toBe(3885232834169);
     });
   });
 });
