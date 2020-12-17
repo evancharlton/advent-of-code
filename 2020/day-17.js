@@ -5,42 +5,58 @@ const data = (type = "") => {
   return lines;
 };
 
-const k = (x, y, z, w) => `${x},${y},${z},${w}`;
-const xyzw = (k) => {
-  const [x, y, z, w] = k.split(",").map(Number);
-  return { x, y, z, w };
-};
-
-const activeNeighbors = (universe, { x: x0, y: y0, z: z0, w: w0 }) => {
-  let sum = 0;
-  for (let x = x0 - 1; x <= x0 + 1; x += 1) {
-    for (let y = y0 - 1; y <= y0 + 1; y += 1) {
-      for (let z = z0 - 1; z <= z0 + 1; z += 1) {
-        for (let w = w0 - 1; w <= w0 + 1; w += 1) {
-          if (x0 === x && y0 === y && z0 === z && w0 === w) continue;
-          const state = universe[k(x, y, z, w)] || ".";
-          if (state === "#") {
-            sum += 1;
-          }
-        }
-      }
+const getNeighbors = (key) => {
+  const dimens = key.split(",").map(Number);
+  let keys = [];
+  while (dimens.length > 0) {
+    const current = dimens.shift();
+    const additions = [current - 1, current, current + 1];
+    if (keys.length === 0) {
+      keys = additions.map((add) => String(add));
+      continue;
     }
+
+    keys = additions
+      .map((add) => {
+        return keys.map((key) => {
+          if (!key) {
+            return String(add);
+          }
+          return `${key},${add}`;
+        });
+      })
+      .flat();
   }
-  return sum;
+  return keys;
 };
 
-const createUniverse = (lines) => {
+const activeNeighbors = (universe, key) => {
+  return getNeighbors(key).reduce((acc, neighbor) => {
+    if (neighbor === key) {
+      return acc;
+    }
+
+    const state = universe[neighbor] || ".";
+    if (state !== "#") {
+      return acc;
+    }
+    return acc + 1;
+  }, 0);
+};
+
+const createUniverse = (lines, dimensions) => {
   const universe = {};
-  const z = 0;
-  const w = 0;
+  const pos = new Array(dimensions).fill(0);
   for (let y = 0; y < lines.length; y += 1) {
     for (let x = 0; x < lines[y].length; x += 1) {
       const state = lines[y][x];
       if (state !== "#") {
         continue;
       }
-
-      universe[k(x, y, z, w)] = state;
+      pos[0] = x;
+      pos[1] = y;
+      const key = pos.join(",");
+      universe[key] = state;
     }
   }
   return universe;
@@ -49,33 +65,25 @@ const createUniverse = (lines) => {
 const step = (universe) => {
   const nextUniverse = {};
   Object.keys(universe).forEach((key) => {
-    const { x: x0, y: y0, z: z0, w: w0 } = xyzw(key);
-    const neighbors = activeNeighbors(universe, { x: x0, y: y0, z: z0, w: w0 });
+    const neighbors = activeNeighbors(universe, key);
     if (neighbors === 2 || neighbors === 3) {
       // Stays active
       nextUniverse[key] = "#";
     }
 
     // Write to my neighbors so that we can look for new life
-    for (let x = x0 - 1; x <= x0 + 1; x += 1) {
-      for (let y = y0 - 1; y <= y0 + 1; y += 1) {
-        for (let z = z0 - 1; z <= z0 + 1; z += 1) {
-          for (let w = w0 - 1; w <= w0 + 1; w += 1) {
-            if (x === x0 && y === y0 && z === z0 && w === w0) {
-              continue;
-            }
-
-            const neighborKey = k(x, y, z, w);
-            const neighbor = universe[neighborKey];
-            if (neighbor !== undefined) {
-              continue;
-            }
-
-            nextUniverse[neighborKey] = (nextUniverse[neighborKey] || 0) + 1;
-          }
-        }
+    getNeighbors(key).forEach((neighbor) => {
+      if (neighbor === key) {
+        return;
       }
-    }
+
+      const state = universe[neighbor];
+      if (state !== undefined) {
+        return;
+      }
+
+      nextUniverse[neighbor] = (nextUniverse[neighbor] || 0) + 1;
+    });
   });
 
   // Now go through and update the universe with new life
@@ -96,18 +104,28 @@ const step = (universe) => {
   return nextUniverse;
 };
 
-const part1 = (lines) => {
-  let universe = createUniverse(lines);
-
-  for (let i = 0; i < 6; i += 1) {
-    universe = step(universe);
+const evolve = (universe, steps = 6) => {
+  let next = universe;
+  for (let i = 0; i < steps; i += 1) {
+    next = step(next);
   }
+  return next;
+};
 
+const numActiveCells = (universe) => {
   return Object.keys(universe).length;
 };
 
+const part1 = (lines) => {
+  const initial = createUniverse(lines, 3);
+  const evolved = evolve(initial);
+  return numActiveCells(evolved);
+};
+
 const part2 = (lines) => {
-  return undefined;
+  const initial = createUniverse(lines, 4);
+  const evolved = evolve(initial);
+  return numActiveCells(evolved);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
@@ -119,4 +137,6 @@ module.exports = {
   data,
   part1,
   part2,
+  getNeighbors,
+  activeNeighbors,
 };
