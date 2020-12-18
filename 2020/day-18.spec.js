@@ -32,18 +32,21 @@ describe("Day 18", () => {
       ).toBe(71 + 51);
     });
 
-    it.skip("works for real data", () => {
-      expect(part1(data())).toBe(undefined);
+    it("works for real data", () => {
+      expect(part1(data())).toBe(50956598240016);
     });
   });
 
   describe("Part 2", () => {
     it("works for test data", () => {
-      expect(part2(data("test"))).toBe(undefined);
+      // expect(part2(["1 + 2 * 3 + 4 * 5 + 6"])).toBe(71);
+      expect(part2(["1 + (2 * 3) + (4 * (5 + 6))"])).toBe(51);
+      expect(part2(["2 * 3 + (4 * 5)"])).toBe(46);
+      expect(part2(["5 + (8 * 3 + 9 + 3 * 4 * 3)"])).toBe(1445);
     });
 
-    it.skip("works for real data", () => {
-      expect(part2(data())).toBe(undefined);
+    it("works for real data", () => {
+      expect(part2(data())).toBe(535809575344339);
     });
   });
 });
