@@ -1,9 +1,35 @@
-const { part1, part2, data } = require("./day-18");
+const { part1, part2, data, getTerms, evaluate, doMath } = require("./day-18");
 
 describe("Day 18", () => {
+  describe("getTerms", () => {
+    it("works", () => {
+      expect(getTerms("1 + 2")).toEqual(expect.arrayContaining([1, "+", 2]));
+    });
+  });
+
+  describe("evaluate", () => {
+    it("works", () => {
+      expect(evaluate("1 + (2 * 3)")).toEqual(7);
+      expect(evaluate("1 + 2")).toEqual(3);
+    });
+  });
+
+  describe("doMath", () => {
+    it("works", () => {
+      expect(doMath("1 + 2")).toBe(3);
+      expect(doMath("1 * 2")).toBe(2);
+      expect(doMath("1 + 2 * 3")).toBe(9);
+    });
+  });
+
   describe("Part 1", () => {
     it("works for test data", () => {
-      expect(part1(data("test"))).toBe(undefined);
+      expect(part1(["1 + 2 * 3 + 4 * 5 + 6"])).toBe(71);
+      expect(part1(["1 + (2 * 3) + (4 * (5 + 6))"])).toBe(51);
+      expect(part1(["2 * 3 + (4 * 5)"])).toBe(26);
+      expect(
+        part1(["1 + 2 * 3 + 4 * 5 + 6", "1 + (2 * 3) + (4 * (5 + 6))"])
+      ).toBe(71 + 51);
     });
 
     it.skip("works for real data", () => {
