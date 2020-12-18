@@ -1,6 +1,5 @@
 const data = (type = "") => {
-  const lines = require("./input")(__filename, "\n", type).filter(Boolean);
-  return lines;
+  return require("./input")(__filename, "\n", type);
 };
 
 const getTerms = (expr) => {
