@@ -1,4 +1,6 @@
-const lines = require("./input")(__filename, "\n");
+const data = (type = "") => {
+  return require("./input")(__filename, "\n", type);
+};
 
 const getSeatInfo = (input) => {
   const letters = input.split("");
@@ -38,14 +40,41 @@ const getSeatInfo = (input) => {
   return { row, seat, id: row * 8 + seat };
 };
 
-const plane = lines.map(getSeatInfo).reduce((acc, { row, seat }) => {
-  return {
-    ...acc,
-    [row]: {
-      ...acc[row],
-      [seat]: true,
-    },
-  };
-}, {});
+const part1 = (lines) => {
+  const [{ id }] = lines
+    .map(getSeatInfo)
+    .sort(({ id: idA }, { id: idB }) => idB - idA);
+  return id;
+};
 
-console.table(plane);
+const part2 = (lines) => {
+  const plane = lines.map(getSeatInfo).reduce((acc, { row, seat }) => {
+    return {
+      ...acc,
+      [row]: {
+        ...acc[row],
+        [seat]: true,
+      },
+    };
+  }, {});
+
+  for (let row = 11; row < 128; row += 1) {
+    for (let col = 0; col < 8; col += 1) {
+      const r = plane[row];
+      if (r[col] === undefined) {
+        return row * 8 + col;
+      }
+    }
+  }
+};
+
+if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
+  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
+  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
+}
+
+module.exports = {
+  data,
+  part1,
+  part2,
+};
