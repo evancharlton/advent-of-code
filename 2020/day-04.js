@@ -1,4 +1,19 @@
-const batches = require("./input")(__filename, "\n\n");
+const data = (type = "") => {
+  return require("./input")(__filename, "\n\n", type).map((passport) =>
+    passport
+      .replace(/\n/g, " ")
+      .split(" ")
+      .reduce(
+        (acc, entry) => {
+          const [key, value] = entry.split(":");
+          return { ...acc, [key]: value };
+        },
+        { cid: "North Pole" }
+      )
+  );
+};
+
+const REQUIRED = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid"]; //.reduce((acc, field) => ({ ...acc, [field]: true }), {});
 
 const EYE_COLORS = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].reduce(
   (acc, v) => ({ ...acc, [v]: true }),
@@ -59,19 +74,22 @@ const isValid = ({
   return true;
 };
 
-const passports = batches
-  .map((passport) =>
-    passport
-      .replace(/\n/g, " ")
-      .split(" ")
-      .reduce((acc, entry) => {
-        const [key, value] = entry.split(":");
-        return {
-          ...acc,
-          [key]: value,
-        };
-      }, {})
-  )
-  .filter(isValid);
+const part1 = (passports) => {
+  return passports.filter((passport) => REQUIRED.every((key) => passport[key]))
+    .length;
+};
 
-console.log(passports.length);
+const part2 = (passports) => {
+  return passports.filter(isValid).length;
+};
+
+if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
+  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
+  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
+}
+
+module.exports = {
+  data,
+  part1,
+  part2,
+};
