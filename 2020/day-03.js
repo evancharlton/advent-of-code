@@ -1,6 +1,8 @@
-const lines = require("./input")(__filename);
+const data = (type = "") => {
+  return require("./input")(__filename, "\n", type);
+};
 
-const simulate = (deltaX, deltaY) => {
+const simulate = (lines) => (deltaX, deltaY) => {
   let treeCount = 0;
   let x = 0;
   let y = 0;
@@ -16,12 +18,31 @@ const simulate = (deltaX, deltaY) => {
   return treeCount;
 };
 
-const values = [
-  simulate(1, 1),
-  simulate(3, 1),
-  simulate(5, 1),
-  simulate(7, 1),
-  simulate(1, 2),
-];
+const part1 = (lines) => {
+  return simulate(lines)(3, 1);
+};
 
-console.log(values.reduce((acc, v) => acc * v, 1));
+const part2 = (lines) => {
+  const simulator = simulate(lines);
+
+  const values = [
+    simulator(1, 1),
+    simulator(3, 1),
+    simulator(5, 1),
+    simulator(7, 1),
+    simulator(1, 2),
+  ];
+
+  return values.reduce((acc, v) => acc * v, 1);
+};
+
+if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
+  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
+  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
+}
+
+module.exports = {
+  data,
+  part1,
+  part2,
+};
