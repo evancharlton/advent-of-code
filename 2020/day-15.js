@@ -3,45 +3,30 @@ const data = (type = "") => {
 };
 
 const part1 = (numbers, limit = 2020) => {
-  const spoken = new Map();
+  const size = 30_000_000;
+  const spoken = new Uint32Array(size);
 
-  let said;
   let i = 1;
-  numbers.forEach((n, j) => {
-    spoken.set(n, [i]);
+  let said;
+  numbers.forEach((n) => {
     said = n;
+    spoken[said] = i;
     i += 1;
   });
 
   while (i <= limit) {
-    let [turn, prev] = spoken.get(said) || [];
+    const prevTurn = i - 1;
+    const lastTime = spoken[said];
+    spoken[said] = prevTurn;
+    said = lastTime === 0 ? 0 : prevTurn - lastTime;
 
-    // Do we have a record of this?
-    if (turn === undefined) {
-      throw new Error(`${said} was spoken for the first time or something`);
-    }
-
-    // That was the first time it has been spoken
-    if (prev === undefined) {
-      prev = turn;
-    }
-
-    said = turn - prev;
-    [turn] = spoken.get(said) || [i];
-
-    spoken.set(said, [i, turn]);
     i += 1;
-
-    if (i % 10000 === 0) {
-      console.log(`Still working ... ${i}`);
-    }
   }
 
   return said;
 };
 
 const part2 = (numbers) => {
-  // node --max_old_space_size=8192
   return part1(numbers, 30_000_000);
 };
 
