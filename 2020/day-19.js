@@ -4,12 +4,14 @@ const data = (type = "") => {
     "\n\n",
     type
   );
-  return [rules, receivedMessages.split("\n")];
+
+  return [
+    rules.split("\n").map((line) => line.replace(/"/g, "")),
+    receivedMessages.split("\n"),
+  ];
 };
 
-const expandZeroRule = (block) => {
-  const lines = block.split("\n").map((line) => line.replace(/"/g, ""));
-
+const expandZeroRule = (lines) => {
   const rules = lines
     .map((line) => line.split(": "))
     .map(([id, spec]) => {
@@ -50,8 +52,34 @@ const part1 = ([rules, messages]) => {
   return messages.filter((message) => message.match(re)).length;
 };
 
-const part2 = (lines) => {
-  return undefined;
+const part2 = ([oldRules, messages]) => {
+  const rules = oldRules.map((line) => {
+    if (line.startsWith("8: ")) {
+      return "8: (?:42)+";
+    }
+    if (line.startsWith("11: ")) {
+      const start = "(?:42)";
+      const end = "(?:31)";
+      let out = `11: `;
+      let i = 0;
+      while (i++ < 10) {
+        for (let j = 0; j < i; j += 1) {
+          out += `${start}`;
+        }
+        for (let j = 0; j < i; j += 1) {
+          out += `${end}`;
+        }
+        out += "|";
+      }
+      out = out.substr(0, out.length - 1);
+      return out;
+    }
+    return line;
+  });
+
+  const zeroRule = expandZeroRule(rules);
+  const re = new RegExp(zeroRule);
+  return messages.filter((message) => message.match(re)).sort().length;
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
