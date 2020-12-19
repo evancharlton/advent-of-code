@@ -22,6 +22,9 @@ const expandZeroRule = (lines) => {
           .map((v) => `(?:${v})`)
           .join("|");
       }
+      if (term === "a" || term === "b") {
+        return [id, term];
+      }
       return [id, `(?:${term})`];
     })
     .reduce((acc, [id, regex]) => ({ ...acc, [id]: regex }), {});
@@ -42,7 +45,10 @@ const expandZeroRule = (lines) => {
       });
   }
 
-  const zeroRule = rules["0"].replace(/ /g, "");
+  let zeroRule = rules["0"].replace(/ /g, "");
+  do {
+    zeroRule = zeroRule.replace(/\(\?:([ab]+)\)/g, "$1");
+  } while (zeroRule.match(/\(\?:([ab]+)\)/));
   return `^${zeroRule}$`;
 };
 
@@ -62,7 +68,7 @@ const part2 = ([oldRules, messages]) => {
       const end = "(?:31)";
       let out = `11: `;
       let i = 0;
-      while (i++ < 10) {
+      while (i++ < 4) {
         for (let j = 0; j < i; j += 1) {
           out += `${start}`;
         }
