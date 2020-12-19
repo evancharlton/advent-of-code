@@ -1,4 +1,6 @@
-const lines = require("./input")(__filename);
+const data = (type = "") => {
+  return require("./input")(__filename, "\n", type);
+};
 
 const parseLine = (line) => {
   const [ins, v] = line.split(" ");
@@ -17,18 +19,15 @@ const compute = (program) => {
   let pointer = 0;
   const visitedPointers = new Set();
 
-  while (true) {
+  let limit = 0;
+  while (limit++ < 10000 && true) {
     const line = program[pointer];
     if (!line) {
-      console.log("PROGRAM TERMINATED");
-      console.table({ pointer, accumulator });
-      process.exit(0);
+      return accumulator;
     }
 
-    console.log(`PROG[${pointer}]: ${line}\t\t// ${accumulator}`);
-
     if (visitedPointers.has(pointer)) {
-      throw new Error(`We have been to ${pointer} before`);
+      throw new Error(accumulator);
     }
     visitedPointers.add(pointer);
 
@@ -41,46 +40,62 @@ const compute = (program) => {
       }
 
       case "jmp": {
-        console.log(`  jump ${val} from ${pointer} to ${pointer + val}`);
         pointer += val;
         break;
       }
 
       case "acc": {
-        console.log(
-          `  add ${val} to ${accumulator} to give ${accumulator + val}`
-        );
         accumulator += val;
         pointer += 1;
         break;
       }
 
       default: {
-        console.error(`Unrecognized instruction: ${ins}`);
-        console.error(`---> ${line}`);
         throw new Error("");
       }
     }
+  }
 
-    console.log("----");
+  console.error("PROGRAM NEVER TERMINATED");
+};
+
+const part1 = (lines) => {
+  try {
+    compute(lines);
+  } catch (ex) {
+    return +ex.message;
   }
 };
 
-for (let i = 0; i < lines.length; i += 1) {
-  const line = lines[i];
-  if (!(line.startsWith("jmp") || line.startsWith("nop"))) {
-    continue;
+const part2 = (lines) => {
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!(line.startsWith("jmp") || line.startsWith("nop"))) {
+      continue;
+    }
+
+    const updated = [...lines];
+    if (line.startsWith("jmp")) {
+      updated[i] = line.replace("jmp", "nop");
+    } else if (line.startsWith("nop")) {
+      updated[i] = line.replace("nop", "jmp");
+    }
+
+    try {
+      return compute(updated);
+    } catch (e) {}
   }
 
-  const updated = [...lines];
-  if (line.startsWith("jmp")) {
-    updated[i] = line.replace("jmp", "nop");
-  } else if (line.startsWith("nop")) {
-    updated[i] = line.replace("nop", "jmp");
-  }
+  throw new Error("No valid return");
+};
 
-  try {
-    console.log("=====");
-    compute(updated);
-  } catch (e) {}
+if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
+  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
+  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
 }
+
+module.exports = {
+  data,
+  part1,
+  part2,
+};
