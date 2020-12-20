@@ -3,7 +3,7 @@ const { part1, part2, data } = require("./day-20");
 describe("Day 20", () => {
   describe("Part 1", () => {
     it("works for test data", () => {
-      expect(part1(data("test"))).toBe(undefined);
+      expect(part1(data("test"))).toBe(20899048083289);
     });
 
     it.skip("works for real data", () => {
