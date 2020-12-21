@@ -14,7 +14,7 @@ const data = (type = "") => {
   });
 };
 
-const part1 = (input) => {
+const getIngredientMapping = (input) => {
   const knownMapping = new Map();
 
   const allergenMap = input.reduce((acc, { allergens, ingredients }) => {
@@ -45,6 +45,11 @@ const part1 = (input) => {
       }
     });
   }
+  return knownMapping;
+};
+
+const part1 = (input) => {
+  const knownMapping = getIngredientMapping(input);
 
   const safeIngredients = input
     .reduce((acc, { ingredients }) => {
@@ -58,7 +63,15 @@ const part1 = (input) => {
 };
 
 const part2 = (input) => {
-  return undefined;
+  const knownMapping = getIngredientMapping(input);
+  const inverted = { ...knownMapping };
+  knownMapping.forEach((ingredient, allergen) => {
+    inverted[allergen] = ingredient;
+  });
+  return Object.entries(inverted)
+    .sort(([_0, a], [_1, b]) => a.localeCompare(b))
+    .map(([ingredient]) => ingredient)
+    .join(",");
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
