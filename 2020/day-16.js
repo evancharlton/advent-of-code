@@ -183,6 +183,7 @@ const part2 = ({ info, nearby, yours }) => {
   return deps;
 };
 
+/* istanbul ignore next */
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
   console.log(`Part 1:`, part1(data()));
   console.log(`Part 2:`, part2(data()));

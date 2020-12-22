@@ -1,11 +1,8 @@
 const data = (type = "") => {
   return require("./input")(__filename, "\n", type).reduce((acc, line) => {
-    const match = line.match(/^([\d]+)-([\d]+) ([a-z]): ([a-z]+)$/);
-    if (!match) {
-      throw new Error(`Bad input: ${match}`);
-    }
-    const [_, min, max, letter, password] = match;
-
+    const [_, min, max, letter, password] = line.match(
+      /^([\d]+)-([\d]+) ([a-z]): ([a-z]+)$/
+    );
     return [...acc, { min, max, letter, password }];
   }, []);
 };
@@ -27,6 +24,7 @@ const part2 = (passwords) => {
   }).length;
 };
 
+/* istanbul ignore next */
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
   console.log(`Part 1:`, part1(data(process.argv[2] || "")));
   console.log(`Part 2:`, part2(data(process.argv[2] || "")));
