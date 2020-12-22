@@ -19,8 +19,7 @@ const compute = (program) => {
   let pointer = 0;
   const visitedPointers = new Set();
 
-  let limit = 0;
-  while (limit++ < 10000 && true) {
+  while (true) {
     const line = program[pointer];
     if (!line) {
       return accumulator;
@@ -49,14 +48,8 @@ const compute = (program) => {
         pointer += 1;
         break;
       }
-
-      default: {
-        throw new Error("");
-      }
     }
   }
-
-  console.error("PROGRAM NEVER TERMINATED");
 };
 
 const part1 = (lines) => {
@@ -83,10 +76,11 @@ const part2 = (lines) => {
 
     try {
       return compute(updated);
-    } catch (e) {}
+    } catch (e) {
+      // Catch this and loop around -- this is expected because we're doing a
+      // brute-force solution here.
+    }
   }
-
-  throw new Error("No valid return");
 };
 
 /* istanbul ignore next */
