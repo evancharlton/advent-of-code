@@ -1,7 +1,7 @@
 const data = (type = "") => {
-  const lines = require("./input")(__filename, "\n", type).map(Number);
-  lines.sort((a, b) => a - b);
-  return lines;
+  return require("./input")(__filename, "\n", type)
+    .map(Number)
+    .sort((a, b) => a - b);
 };
 
 const part1 = (data) => {
@@ -10,11 +10,6 @@ const part1 = (data) => {
   while (data.length > 0) {
     const next = data.shift();
     const difference = next - joltage;
-    if (difference > 3 || difference < 1) {
-      console.warn(`${next} is incompatible with ${joltage}`);
-      break;
-    }
-
     joltage = next;
     spreads[difference] = (spreads[difference] || 0) + 1;
   }
