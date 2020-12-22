@@ -32,8 +32,8 @@ describe("Day 22", () => {
 
     describe("combat", () => {
       it("works", () => {
-        expect(combat(5, [8], [10, 9, 7, 5])).toEqual([0, 116]);
-        expect(combat(1, [1, 8, 3], [4, 10, 9, 7, 5, 6, 2])).toEqual([0, 291]);
+        expect(combat([8], [10, 9, 7, 5])).toEqual([0, 116]);
+        expect(combat([1, 8, 3], [4, 10, 9, 7, 5, 6, 2])).toEqual([0, 291]);
       });
     });
   });
