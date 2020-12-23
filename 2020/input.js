@@ -17,9 +17,8 @@ module.exports = (day, delim = "\n", type = process.argv[2]) => {
     fs.readFileSync(path.resolve(path.join(__dirname, "input", filename)))
   ).trim();
 
-  if (delim) {
-    return contents.split(delim);
+  if (delim === undefined) {
+    return contents;
   }
-
-  return contents.filter((l) => !l.startsWith("//"));
+  return contents.split(delim).filter((l) => !l.startsWith("//"));
 };
