@@ -14,11 +14,11 @@ describe("Day 23", () => {
 
   describe("Part 2", () => {
     it("works for test data", () => {
-      expect(part2(data("test"))).toBe(undefined);
+      expect(part2(data("test"))).toBe(149245887792);
     });
 
-    it.skip("works for real data", () => {
-      expect(part2(data())).toBe(undefined);
+    it("works for real data", () => {
+      expect(part2(data())).toBe(264692662390);
     });
   });
 });

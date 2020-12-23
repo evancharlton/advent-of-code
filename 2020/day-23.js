@@ -3,81 +3,89 @@ const data = (type = "") => {
   return lines;
 };
 
-const getNextValue = (cups, current) => {
-  const [lowest, highest] = minmax(cups);
+const play = (numbers, cups, limit) => {
+  const { pointers, start } = generatePointers(numbers, cups);
+  const picked = new Set();
 
-  if (current === lowest) {
-    return highest;
+  let current = pointers.get(start);
+
+  let turn = 0;
+  while (turn++ < limit) {
+    const a = pointers.get(current);
+    const b = pointers.get(a);
+    const c = pointers.get(b);
+    const next = pointers.get(c);
+
+    picked.clear();
+    picked.add(a);
+    picked.add(b);
+    picked.add(c);
+
+    let destination = current;
+    while (true) {
+      if (
+        !picked.has(destination) &&
+        pointers.has(destination) &&
+        destination !== current
+      ) {
+        break;
+      }
+      destination -= 1;
+      if (destination === 0) {
+        destination = pointers.size;
+      }
+    }
+
+    pointers.set(c, pointers.get(destination));
+    pointers.set(destination, a);
+    pointers.set(current, next);
+
+    current = next;
   }
-
-  let c = current - 1;
-  while (!cups.includes(c)) {
-    c -= 1;
-  }
-  return c;
-};
-
-const debug = (...args) => {
-  if (process.env.NODE_ENV === "test") return;
-  console.log(...args);
+  return pointers;
 };
 
 const part1 = (numbers, limit = 100) => {
-  let turn = 0;
-  let cups = [...numbers];
-  while (turn++ < limit) {
-    debug(`-- move ${turn} --`);
-    const [current, a, b, c, ...rest] = cups;
-    const [next] = rest;
-    const picked = [current, ...rest];
-    debug(
-      `cups: ${cups
-        .map((c, i) => {
-          if (i === 0) {
-            return `(${c})`;
-          }
-          return c;
-        })
-        .join(" ")}`
-    );
-    debug(`pickup: ${a}, ${b}, ${c}`);
-
-    const destination = getNextValue(picked, current);
-    const destinationIndex = picked.indexOf(destination);
-    debug(`destination: ${destination} @ ${destinationIndex}`);
-    picked.splice(destinationIndex + 1, 0, a, b, c);
-
-    const nextIndex = picked.indexOf(next);
-    const before = picked.slice(0, nextIndex);
-    const after = picked.slice(nextIndex);
-    const nextArray = [...after, ...before];
-    cups = nextArray;
-
-    debug("");
-  }
+  const pointers = play(numbers, numbers.length, limit);
 
   const out = [];
-  const oneIndex = cups.indexOf(1);
-  for (let i = 1; i <= cups.length - 1; i += 1) {
-    out.push(cups[(oneIndex + i) % cups.length]);
+  let current = pointers.get(1);
+  while (current !== 1) {
+    out.push(current);
+    current = pointers.get(current);
   }
 
   return out.join("");
 };
 
-const part2 = (input) => {
-  return undefined;
+const part2 = (numbers) => {
+  const pointers = play(numbers, 1_000_000, 10_000_000);
+
+  const first = pointers.get(1);
+  const second = pointers.get(first);
+  return first * second;
 };
 
-const minmax = (cups) =>
-  cups.reduce(([min, max], c) => [Math.min(min, c), Math.max(max, c)], [
-    Number.MAX_SAFE_INTEGER,
-    0,
-  ]);
+const generatePointers = (numbers, items) => {
+  const pointers = new Map();
+  numbers.forEach((c, i, arr) => {
+    pointers.set(c, arr[i + 1]);
+  });
+
+  let last = numbers[numbers.length - 1];
+  let current = Math.max(...numbers) + 1;
+  while (pointers.size < items - 1) {
+    pointers.set(last, current);
+    last = current;
+    current += 1;
+  }
+  pointers.set(last, numbers[0]);
+  return { pointers, start: last };
+};
 
 /* istanbul ignore next */
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
-  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
+  // console.log(`Part 1:`, part1(data(process.argv[2] || "")));
   console.log(`Part 2:`, part2(data(process.argv[2] || "")));
 }
 
