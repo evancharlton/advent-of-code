@@ -114,7 +114,7 @@ const createHive = () => {
   const start = createTile();
   const edgeIds = [start.id];
 
-  for (let i = 0; i < 20; i += 1) {
+  for (let i = 0; i < 100; i += 1) {
     const addedIds = new Set();
     while (edgeIds.length) {
       const edgeTileId = edgeIds.shift();
@@ -129,9 +129,10 @@ const createHive = () => {
   return hive;
 };
 
-const part1 = (paths) => {
+const createLayout = (paths) => {
   const hive = createHive();
 
+  // Create the initial layout
   paths.forEach((steps, i) => {
     let current = hive.get(0);
     steps.forEach((step, j) => {
@@ -144,18 +145,55 @@ const part1 = (paths) => {
     current.color = FLIPS[current.color];
   });
 
+  return hive;
+};
+
+const countBlackTiles = (hive) => {
   let blackTiles = 0;
   hive.forEach(({ color }) => {
     if (color === "black") {
       blackTiles += 1;
     }
   });
-
   return blackTiles;
 };
 
-const part2 = (input) => {
-  return undefined;
+const part1 = (paths) => {
+  const hive = createLayout(paths);
+  return countBlackTiles(hive);
+};
+
+const part2 = (paths, days = 100) => {
+  const hive = createLayout(paths);
+
+  for (let i = 0; i < days; i += 1) {
+    const changes = new Map();
+    hive.forEach((tile, id) => {
+      const neighbors = SIDES.map((side) => tile[side]).map(
+        (neighborId) => hive.get(neighborId) || { color: "white" }
+      );
+      const blackTileNeighbors = neighbors.filter(
+        ({ color }) => color === "black"
+      ).length;
+      const { color: tileColor } = tile;
+      if (tileColor === "black") {
+        if (blackTileNeighbors === 0 || blackTileNeighbors > 2) {
+          changes.set(id, "white");
+        }
+      } else {
+        if (blackTileNeighbors === 2) {
+          changes.set(id, "black");
+        }
+      }
+    });
+
+    // Perform the changes
+    changes.forEach((newColor, id) => {
+      hive.get(id).color = newColor;
+    });
+  }
+
+  return countBlackTiles(hive);
 };
 
 /* istanbul ignore next */
