@@ -1,9 +1,65 @@
-const { part1, part2, data } = require("./day-24");
+const {
+  DELTAS,
+  part1,
+  part2,
+  data,
+  getSteps,
+  getId,
+  getNeighbors,
+} = require("./day-24");
 
 describe("Day 24", () => {
+  describe("getSteps", () => {
+    it("works", () => {
+      expect(getSteps("esew")).toEqual(["e", "se", "w"]);
+      expect(getSteps("nwwswee")).toEqual(["nw", "w", "sw", "e", "e"]);
+    });
+  });
+
+  describe("getId", () => {
+    it("works", () => {
+      expect(getId(getSteps("nwwswee"))).toEqual("0,0,0");
+    });
+  });
+
+  describe("getNeighbors", () => {
+    it("works", () => {
+      expect(getNeighbors("0,0,0")).toEqual(
+        expect.arrayContaining([
+          "0,1,-1", // nw
+          "-1,1,0", // w
+          "-1,0,1", // sw
+          "0,-1,1", // se
+          "1,-1,0", // e
+          "1,0,-1", // ne
+        ])
+      );
+    });
+  });
+
   describe("Part 1", () => {
+    it("works for simple data", () => {
+      expect(
+        part1([
+          // two step
+          getSteps("ee"),
+        ])
+      ).toBe(1);
+      expect(
+        part1([
+          // one step
+          ["e"],
+          // one step back to that same tile
+          ["e"],
+        ])
+      ).toBe(0);
+    });
+
     it("works for test data", () => {
-      expect(part1(data("test"))).toBe(10);
+      const testData = data("test");
+      expect(part1(testData.slice(0, 1))).toBe(1);
+      expect(part1(testData.slice(0, 2))).toBe(2);
+      expect(part1(testData)).toBe(10);
     });
 
     it("works for real data", () => {

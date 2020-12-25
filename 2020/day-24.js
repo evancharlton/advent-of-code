@@ -1,8 +1,19 @@
-const data = (type = "") => {
-  return require("./input")(__filename, "\n", type).map((path) =>
-    getSteps(path)
-  );
+const DELTAS = {
+  // step: [dx, dy, dz]
+  e: [1, -1, 0],
+  w: [-1, 1, 0],
+  nw: [0, 1, -1],
+  se: [0, -1, 1],
+  sw: [-1, 0, 1],
+  ne: [1, 0, -1],
 };
+
+const data = (type = "") => {
+  return require("./input")(__filename, "\n", type).map(getSteps);
+};
+
+const xyz = (...xyz) => xyz.join(",");
+const zyx = (xyz) => xyz.split(",").map(Number);
 
 const getSteps = (path) => {
   const steps = [];
@@ -22,178 +33,76 @@ const getSteps = (path) => {
   return steps;
 };
 
-const print = (tile = this) => {
-  return [
-    `#${tile.id} (${tile.color})`,
-    SIDES.map((side) => {
-      return `\t${side} => ${tile[side] !== undefined ? tile[side] : "<>"}`;
-    }),
-  ]
-    .flat()
-    .join("\n");
-};
-
-const FLIPS = {
-  black: "white",
-  white: "black",
-};
-
-const MIRROR_STEPS = {
-  e: "w",
-  w: "e",
-  se: "nw",
-  nw: "se",
-  sw: "ne",
-  ne: "sw",
-};
-
-const SIDES = ["e", "se", "sw", "w", "nw", "ne"];
-
-const createHive = () => {
-  let globalId = 0;
-  const hive = new Map();
-
-  const createTile = () => {
-    const created = {
-      id: globalId++,
-      color: "white",
-      toString: function () {
-        return print(this);
-      },
-    };
-    hive.set(created.id, created);
-    return created;
-  };
-
-  const surround = (tileId) => {
-    const tile = hive.get(tileId);
-
-    // Create new tiles as necessary
-    SIDES.forEach((side) => {
-      if (tile[side] === undefined) {
-        const created = createTile();
-        tile[side] = created.id;
-        created[MIRROR_STEPS[side]] = tile.id;
-      }
-    });
-
-    const neighborIds = SIDES.map((side) => tile[side]);
-    const neighbors = neighborIds.map((id) => hive.get(id));
-
-    if (neighbors.some((n) => !n)) {
-      console.warn(neighbors);
-      console.warn(tile.toString());
-      throw new Error("Missing neighbors");
-    }
-
-    const [e, se, sw, w, nw, ne] = neighbors;
-
-    // Now link them all up
-
-    e.sw = se.id;
-    e.nw = ne.id;
-
-    se.ne = e.id;
-    se.w = sw.id;
-
-    sw.e = se.id;
-    sw.nw = w.id;
-
-    w.se = sw.id;
-    w.ne = nw.id;
-
-    nw.sw = w.id;
-    nw.e = ne.id;
-
-    ne.w = nw.id;
-    ne.se = e.id;
-
-    return tile;
-  };
-
-  const start = createTile();
-  const edgeIds = [start.id];
-
-  for (let i = 0; i < 100; i += 1) {
-    const addedIds = new Set();
-    while (edgeIds.length) {
-      const edgeTileId = edgeIds.shift();
-      const surroundedTile = surround(edgeTileId);
-      SIDES.forEach((side) => {
-        addedIds.add(surroundedTile[side]);
-      });
-    }
-    edgeIds.push(...addedIds);
-  }
-
-  return hive;
-};
-
-const createLayout = (paths) => {
-  const hive = createHive();
-
-  // Create the initial layout
-  paths.forEach((steps, i) => {
-    let current = hive.get(0);
-    steps.forEach((step, j) => {
-      current = hive.get(current[step]);
-      if (!current) {
-        console.warn(`Path #${i}, step #${j}`);
-        throw new Error("Walked off the hive!");
-      }
-    });
-    current.color = FLIPS[current.color];
+const getId = (steps) => {
+  const position = [0, 0, 0];
+  steps.forEach((step) => {
+    const [dx, dy, dz] = DELTAS[step];
+    position[0] += dx;
+    position[1] += dy;
+    position[2] += dz;
   });
-
-  return hive;
+  return xyz(...position);
 };
 
-const countBlackTiles = (hive) => {
-  let blackTiles = 0;
-  hive.forEach(({ color }) => {
-    if (color === "black") {
-      blackTiles += 1;
+const getNeighbors = (id) => {
+  const [x, y, z] = zyx(id);
+  return Object.values(DELTAS)
+    .map(([dx, dy, dz]) => [x + dx, y + dy, z + dz])
+    .map((coords) => coords.join(","));
+};
+
+const createBoard = (instructions) => {
+  const board = new Set();
+  instructions.forEach((steps) => {
+    const id = getId(steps);
+    if (board.has(id)) {
+      board.delete(id);
+    } else {
+      board.add(id);
     }
   });
-  return blackTiles;
+  return board;
 };
 
-const part1 = (paths) => {
-  const hive = createLayout(paths);
-  return countBlackTiles(hive);
+const part1 = (instructions) => {
+  return part2(instructions, 0);
 };
 
-const part2 = (paths, days = 100) => {
-  const hive = createLayout(paths);
+const part2 = (instructions, turns) => {
+  let board = createBoard(instructions);
 
-  for (let i = 0; i < days; i += 1) {
-    const changes = new Map();
-    hive.forEach((tile, id) => {
-      const neighbors = SIDES.map((side) => tile[side]).map(
-        (neighborId) => hive.get(neighborId) || { color: "white" }
-      );
-      const blackTileNeighbors = neighbors.filter(
-        ({ color }) => color === "black"
+  let turn = 0;
+  while (turn++ < turns) {
+    const next = new Map();
+    board.forEach((id) => {
+      const neighborIds = getNeighbors(id);
+      const blackTileNeighbors = neighborIds.filter((neighborId) =>
+        board.has(neighborId)
       ).length;
-      const { color: tileColor } = tile;
-      if (tileColor === "black") {
-        if (blackTileNeighbors === 0 || blackTileNeighbors > 2) {
-          changes.set(id, "white");
-        }
+      if (blackTileNeighbors === 0 || blackTileNeighbors > 2) {
+        next.set(id, 3);
       } else {
-        if (blackTileNeighbors === 2) {
-          changes.set(id, "black");
-        }
+        // Set a marker to ensure that we can make this black later on.
+        next.set(id, -10);
       }
+
+      neighborIds.forEach((neighborId) => {
+        const count = next.get(neighborId) || 0;
+        next.set(neighborId, count + 1);
+      });
     });
 
-    // Perform the changes
-    changes.forEach((newColor, id) => {
-      hive.get(id).color = newColor;
+    // Prune it down to tiles with exactly 2 neighbors .. or ones we know are
+    // supposed to be black?
+    board.clear();
+    next.forEach((count, neighborId) => {
+      if (count < 0 || count === 2) {
+        board.add(neighborId);
+      }
     });
   }
 
-  return countBlackTiles(hive);
+  return board.size;
 };
 
 /* istanbul ignore next */
@@ -203,7 +112,11 @@ if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
 }
 
 module.exports = {
+  DELTAS,
   data,
   part1,
   part2,
+  getSteps,
+  getId,
+  getNeighbors,
 };
