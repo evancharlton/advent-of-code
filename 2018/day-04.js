@@ -47,7 +47,62 @@ const part1 = (entries) => {
 };
 
 const part2 = (entries) => {
-  return undefined;
+  const minutes = new Array(60);
+  let currentGuardId = undefined;
+  let naptimeStart = 0;
+  entries.forEach((entry) => {
+    const [_, year, month, day, hour, minute] = entry
+      .match(/^\[([\d]+)-([\d]+)-([\d]+ ([\d]+):([\d]+))] /)
+      .map(Number);
+
+    if (entry.endsWith("begins shift")) {
+      const [_, id] = entry.match(/Guard #([\d]+) /).map(Number);
+      currentGuardId = id;
+      naptimeStart = 0;
+    } else if (entry.endsWith("falls asleep")) {
+      naptimeStart = minute;
+    } else if (entry.endsWith("wakes up")) {
+      for (let i = naptimeStart; i < minute; i += 1) {
+        if (!minutes[i]) {
+          minutes[i] = [];
+        }
+        minutes[i].push(currentGuardId);
+      }
+    }
+  });
+
+  const maxAsleep = (ids) => {
+    const counts = new Map();
+    ids.forEach((id) => {
+      counts.set(id, (counts.get(id) || 0) + 1);
+    });
+
+    // Find the highest number
+    let max = 0;
+    counts.forEach((count) => {
+      max = Math.max(count, max);
+    });
+    return max;
+  };
+
+  const [{ ids, minute: sleepiestMinute }] = minutes
+    .map((ids, minute) => ({ ids, minute }))
+    .sort(({ ids: a }, { ids: b }) => {
+      return maxAsleep(b) - maxAsleep(a);
+    });
+
+  const naptimes = ids.reduce((acc, guardId) => {
+    return {
+      ...acc,
+      [guardId]: (acc[guardId] || 0) + 1,
+    };
+  }, {});
+
+  const [[sleepiestGuard]] = Object.entries(naptimes).sort(
+    ([_a, a], [_b, b]) => b - a
+  );
+
+  return +sleepiestGuard * sleepiestMinute;
 };
 
 /* istanbul ignore next */
