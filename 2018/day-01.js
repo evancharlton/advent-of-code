@@ -8,8 +8,19 @@ const part1 = (values) => {
   return values.reduce((acc, v) => acc + v, 0);
 };
 
-const part2 = (robots) => {
-  return undefined;
+const part2 = (values) => {
+  const reached = new Set();
+  let i = 0;
+  let sum = 0;
+  reached.add(sum);
+  while (true) {
+    const v = values[i++ % values.length];
+    sum += v;
+    if (reached.has(sum)) {
+      return sum;
+    }
+    reached.add(sum);
+  }
 };
 
 /* istanbul ignore next */
