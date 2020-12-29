@@ -76,25 +76,17 @@ const part1 = (input) => {
 const part2 = (input, threshold = 10000) => {
   const [minX, maxX, minY, maxY] = getBounds(input);
 
-  const map = new Map();
+  const distances = new Uint32Array((maxX - minX) * (maxY - minY));
+  let i = 0;
   for (let y = minY; y <= maxY; y += 1) {
     for (let x = minX; x <= maxX; x += 1) {
-      const cellId = `${y},${x}`;
-      const totalDistance = getDistances(x, y, input)
+      distances[i++] = getDistances(x, y, input)
         .map(({ distance }) => distance)
         .reduce((acc, v) => acc + v);
-      map.set(cellId, totalDistance);
     }
   }
 
-  const safeCellIds = new Set();
-  map.forEach((distance, cellId) => {
-    if (distance < threshold) {
-      safeCellIds.add(cellId);
-    }
-  });
-
-  return safeCellIds.size;
+  return distances.filter((distance) => distance < threshold).length;
 };
 
 /* istanbul ignore next */
