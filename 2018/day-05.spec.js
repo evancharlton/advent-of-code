@@ -6,14 +6,14 @@ describe("Day 05", () => {
       expect(part1("aA")).toBe(0);
       expect(part1("abBA")).toBe(0);
       expect(part1("aabAAB")).toBe(6);
-      expect(part1(data())).toBe(0);
+      expect(part1(data())).toBe(10708);
     });
   });
 
   describe("Part 2", () => {
     it("works", () => {
-      expect(part2(data("test"))).toBe(undefined);
-      expect(part2(data())).toBe(undefined);
+      expect(part2("dabAcCaCBAcCcaDA")).toBe(4);
+      expect(part2(data())).toBe(5330);
     });
   });
 });

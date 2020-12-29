@@ -6,23 +6,48 @@ const poles = (a, b) => {
   return a !== b && a.toUpperCase() === b.toUpperCase();
 };
 
-const part1 = (input) => {
-  let polymer = input;
-  outer: while (true) {
-    for (let i = 0; i < polymer.length - 1; i += 1) {
-      const a = polymer[i];
-      const b = polymer[i + 1];
-      if (poles(a, b)) {
-        polymer = polymer.substr(0, i) + polymer.substr(i + 2);
-        continue outer;
-      }
+const react = (input) => {
+  const skips = new Uint8Array(input.length);
+  let skipped = 0;
+  for (let i = 0; i < input.length - 1; i += 1) {
+    const a = input[i];
+    const b = input[i + 1];
+    if (poles(a, b)) {
+      skips[i] = 1;
+      skips[i + 1] = 1;
+      i += 1;
+      skipped += 1;
     }
-    return polymer.length;
   }
+
+  if (skipped === 0) {
+    return input;
+  }
+
+  return react(
+    input
+      .split("")
+      .filter((_, i) => !skips[i])
+      .join("")
+  );
+};
+
+const part1 = (input) => {
+  return react(input).length;
 };
 
 const part2 = (input) => {
-  return undefined;
+  const replacements = [...new Set(input.toUpperCase().split(""))];
+  const shortestPolymer = replacements.reduce((shortest, replacement) => {
+    const replacer = new RegExp(replacement, "ig");
+    const replaced = input.replace(replacer, "");
+    const reacted = react(replaced);
+    if (reacted.length < shortest.length) {
+      return reacted;
+    }
+    return shortest;
+  }, input);
+  return shortestPolymer.length;
 };
 
 /* istanbul ignore next */
