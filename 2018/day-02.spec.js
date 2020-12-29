@@ -10,8 +10,8 @@ describe("Day 02", () => {
 
   describe("Part 2", () => {
     it("works", () => {
-      expect(part2(data("test"))).toBe(undefined);
-      expect(part2(data())).toBe(undefined);
+      expect(part2(data("test2"))).toBe("fgij");
+      expect(part2(data())).toBe("efmyhuckqldtwjyvisipargno");
     });
   });
 });

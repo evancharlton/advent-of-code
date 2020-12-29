@@ -31,7 +31,38 @@ const part1 = (values) => {
 };
 
 const part2 = (values) => {
-  return undefined;
+  const out = [];
+  values.forEach((id, i, all) => {
+    const others = all.filter((_, j) => i !== j);
+    const neighbors = others.filter((otherId) => {
+      let differences = 0;
+      id.forEach((char, j) => {
+        if (differences >= 2) {
+          return;
+        }
+        if (otherId[j] !== char) {
+          differences += 1;
+        }
+      });
+      return differences === 1;
+    });
+    out.push(...neighbors);
+  });
+
+  const [result] = out;
+  const union = [];
+  result.forEach((letter, i) => {
+    const count = out.reduce((acc, val) => {
+      if (val[i] === letter) {
+        return acc + 1;
+      }
+      return acc;
+    }, 0);
+    if (count === out.length) {
+      union.push(letter);
+    }
+  });
+  return union.join("");
 };
 
 /* istanbul ignore next */
