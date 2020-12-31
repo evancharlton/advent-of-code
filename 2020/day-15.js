@@ -3,24 +3,20 @@ const data = (type = "") => {
 };
 
 const part1 = (numbers, limit = 2020) => {
-  const size = 30_000_000;
-  const spoken = new Uint32Array(size);
+  const spoken = new Uint32Array(limit + 1);
 
-  let i = 1;
   let said;
-  numbers.forEach((n) => {
-    said = n;
-    spoken[said] = i;
-    i += 1;
-  });
+  for (let i = 1; i <= limit; i += 1) {
+    if (i <= numbers.length) {
+      said = numbers[i - 1];
+      spoken[said] = i;
+      continue;
+    }
 
-  while (i <= limit) {
     const prevTurn = i - 1;
     const lastTime = spoken[said];
     spoken[said] = prevTurn;
     said = lastTime === 0 ? 0 : prevTurn - lastTime;
-
-    i += 1;
   }
 
   return said;
