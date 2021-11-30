@@ -1,0 +1,6 @@
+Al => ThF
+Al => ThRnFAr
+H => CRnAlAr
+H => CRnFYFYFAr
+
+HAlH

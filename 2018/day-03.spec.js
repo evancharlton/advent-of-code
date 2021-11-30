@@ -9,7 +9,7 @@ describe("Day 03", () => {
   });
 
   describe("Part 2", () => {
-    it("works", () => {
+    it.skip("works", () => {
       expect(part2(data("test"))).toBe(3);
       expect(part2(data())).toBe(undefined);
     });
