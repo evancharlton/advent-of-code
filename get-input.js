@@ -13,6 +13,7 @@ const month = now.getMonth();
 const year = process.argv[3] || (() => String(now.getFullYear()))();
 
 const inputFile = path.join(year, "input", `day-${date}.txt`);
+const testFile = path.join(year, "input", `day-${date}.test.txt`);
 
 if (!process.argv[3] && month !== 12) {
   console.error(
@@ -31,3 +32,7 @@ http.get(
   { headers: { cookie: `session=${process.env.AOC_COOKIE}` } },
   (res) => res.pipe(out)
 );
+
+if (!fs.existsSync(testFile)) {
+  fs.writeFileSync(testFile, "");
+}
