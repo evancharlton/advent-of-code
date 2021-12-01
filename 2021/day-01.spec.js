@@ -2,16 +2,16 @@ const { part1, part2, data } = require("./day-01");
 
 describe("Day 01", () => {
   describe("Part 1", () => {
-    it("works for simple data", () => {
+    it.skip("works for simple data", () => {
       expect(part1([])).toEqual(undefined);
     });
 
     it("works for test data", () => {
-      expect(part1(data("test"))).toEqual(undefined);
+      expect(part1(data("test"))).toEqual(7);
     });
 
     it("works for real data", () => {
-      expect(part1(data())).toEqual(undefined);
+      expect(part1(data())).toEqual(1390);
     });
   });
 

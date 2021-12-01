@@ -3,11 +3,20 @@ const data = (type = "") => {
 };
 
 const part1 = (data) => {
-  return undefined;
+  const numbers = data.map((d) => +d);
+  return numbers.reduce((count, reading, i) => {
+    if (i === 0) {
+      return count;
+    }
+    if (reading > numbers[i - 1]) {
+      return count + 1;
+    }
+    return count;
+  }, 0);
 };
 
 const part2 = (data) => {
-  return undefined
+  return undefined;
 };
 
 /* istanbul ignore next */
