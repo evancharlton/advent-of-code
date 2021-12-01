@@ -15,7 +15,7 @@ const year = process.argv[3] || (() => String(now.getFullYear()))();
 const inputFile = path.join(year, "input", `day-${date}.txt`);
 const testFile = path.join(year, "input", `day-${date}.test.txt`);
 
-if (!process.argv[3] && month !== 12) {
+if (!process.argv[3] && month !== 11) {
   console.error(
     "Unable to fetch outside of December. Please specify both the date and the year."
   );
