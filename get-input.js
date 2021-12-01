@@ -23,12 +23,16 @@ if (!process.argv[3] && month !== 11) {
   process.exit(1);
 }
 
+const url = `https://adventofcode.com/${year}/day/${date.replace(
+  /^0/,
+  ""
+)}/input`;
 const out = fs.createWriteStream(path.resolve(path.join(__dirname, inputFile)));
 
-console.log(`Fetching input into ${inputFile}`);
+console.log(`Fetching ${url} into ${inputFile}`);
 
 http.get(
-  `https://adventofcode.com/${year}/day/${date}/input`,
+  url,
   { headers: { cookie: `session=${process.env.AOC_COOKIE}` } },
   (res) => res.pipe(out)
 );
