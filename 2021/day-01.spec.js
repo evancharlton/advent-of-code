@@ -1,6 +1,8 @@
-const { part1, part2, data } = require("./day-01");
+const { basename } = require("path");
+const DAY = basename(__filename).replace(".spec.js", "");
+const { part1, part2, data } = require(`./${DAY}`);
 
-describe("Day 01", () => {
+describe(DAY.replace("-", " "), () => {
   test("Part 1", () => {
     // test for test data
     expect(part1(data("test"))).toEqual(7);
