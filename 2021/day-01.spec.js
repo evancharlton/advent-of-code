@@ -17,11 +17,11 @@ describe("Day 01", () => {
 
   describe("Part 2", () => {
     it("works for test data", () => {
-      expect(part2(data("test"))).toEqual(undefined);
+      expect(part2(data("test"))).toEqual(5);
     });
 
     it("works for real data", () => {
-      expect(part2(data())).toEqual(undefined);
+      expect(part2(data())).toEqual(1457);
     });
   });
 });
