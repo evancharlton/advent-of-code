@@ -1,35 +1,33 @@
 const data = (type = "") => {
-  return require("./input")(__filename, "\n", type);
+  return require("./input")(__filename, "\n", type).map((d) => +d);
 };
 
-const part1 = (data) => {
-  const numbers = data.map((d) => +d);
-  return numbers.reduce((count, reading, i) => {
+const part1 = (readings) => {
+  return readings.reduce((count, reading, i) => {
     if (i === 0) {
       return count;
     }
-    if (reading > numbers[i - 1]) {
+    if (reading > readings[i - 1]) {
       return count + 1;
     }
     return count;
   }, 0);
 };
 
-const part2 = (data) => {
-  return data
-    .map((d) => +d)
-    .map((value, i, numbers) => {
+const part2 = (readings) => {
+  return readings
+    .map((value, i) => {
       if (i < 2) {
         return 0;
       }
-      return numbers[i - 2] + numbers[i - 1] + value;
+      return readings[i - 2] + readings[i - 1] + value;
     })
     .filter((sum) => sum !== 0)
-    .reduce((count, reading, i, numbers) => {
+    .reduce((count, reading, i, readings) => {
       if (i === 0) {
         return count;
       }
-      if (reading > numbers[i - 1]) {
+      if (reading > readings[i - 1]) {
         return count + 1;
       }
       return count;
