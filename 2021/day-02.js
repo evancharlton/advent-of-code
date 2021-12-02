@@ -1,9 +1,29 @@
 const data = (type = "") => {
-  return require("./input")(__filename, "\n", type);
+  return require("./input")(__filename, "\n", type).map((line) => {
+    const [direction, amount] = line.split(" ");
+    return { direction, amount: +amount };
+  });
 };
 
 const part1 = (data) => {
-  return undefined;
+  let x = 0;
+  let y = 0;
+  data.forEach(({ direction, amount }) => {
+    switch (direction) {
+      case "down":
+        y += amount;
+        break;
+      case "up":
+        y -= amount;
+        break;
+      case "forward":
+        x += amount;
+        break;
+      default:
+        throw new Error(`Unknown ${direction}`);
+    }
+  });
+  return x * y;
 };
 
 const part2 = (data) => {
