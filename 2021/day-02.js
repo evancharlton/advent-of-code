@@ -27,7 +27,26 @@ const part1 = (data) => {
 };
 
 const part2 = (data) => {
-  return undefined;
+  let x = 0;
+  let y = 0;
+  let aim = 0;
+  data.forEach(({ direction, amount }) => {
+    switch (direction) {
+      case "down":
+        aim += amount;
+        break;
+      case "up":
+        aim -= amount;
+        break;
+      case "forward":
+        x += amount;
+        y += aim * amount;
+        break;
+      default:
+        throw new Error(`Unknown ${direction}`);
+    }
+  });
+  return x * y;
 };
 
 /* istanbul ignore next */
