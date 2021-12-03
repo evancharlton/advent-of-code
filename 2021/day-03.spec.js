@@ -19,9 +19,10 @@ describe(DAY.replace("-", " "), () => {
     // expect(part1([])).toEqual(undefined);
 
     // test for test data
-    expect(part2(data("test"))).toEqual(undefined);
+    expect(part2(data("test"))).toEqual(230);
 
     // test for real data
-    expect(part2(data())).toEqual(undefined);
+    expect(part2(data())).not.toEqual(3287470);
+    expect(part2(data())).toEqual(4856080);
   });
 });

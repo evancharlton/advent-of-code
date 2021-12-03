@@ -29,8 +29,37 @@ const part1 = (lines) => {
   return gammaRate * epsilonRate;
 };
 
-const part2 = (data) => {
-  return undefined;
+const countBits = (lines, position) => {
+  let zeros = 0;
+  let ones = 0;
+  lines.forEach((line) => {
+    if (line[position] === "0") {
+      zeros += 1;
+    } else {
+      ones += 1;
+    }
+  });
+  return { zeros, ones };
+};
+
+const part2 = (lines) => {
+  let oxygen = [...lines];
+  let c02 = [...lines];
+  for (let i = 0; i < lines[0].length; i += 1) {
+    if (oxygen.length > 1) {
+      const { zeros, ones } = countBits(oxygen, i);
+      const needle = ones >= zeros ? "1" : "0";
+      oxygen = oxygen.filter((line) => line[i] === needle);
+    }
+
+    if (c02.length > 1) {
+      const { zeros, ones } = countBits(c02, i);
+      const needle = zeros <= ones ? "0" : "1";
+      c02 = c02.filter((line) => line[i] === needle);
+    }
+  }
+
+  return parseInt(oxygen[0], 2) * parseInt(c02[0], 2);
 };
 
 /* istanbul ignore next */
