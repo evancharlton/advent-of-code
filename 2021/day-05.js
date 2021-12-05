@@ -8,49 +8,32 @@ const data = (type = "") => {
   });
 };
 
+const reduceMap = (map, { x1, x2, y1, y2 }) => {
+  let x = x1;
+  let y = y1;
+  const dx = x1 === x2 ? 0 : x1 > x2 ? -1 : 1;
+  const dy = y1 === y2 ? 0 : y1 > y2 ? -1 : 1;
+  while (x !== x2 + dx || y !== y2 + dy) {
+    const key = `${x},${y}`;
+    map[key] = (map[key] || 0) + 1;
+    x += dx;
+    y += dy;
+  }
+  return map;
+};
+
+const countCrossings = (map) => Object.values(map).filter((v) => v >= 2).length;
+
 const part1 = (data) => {
-  const map = {};
-  data
+  const map = data
     .filter(({ x1, x2, y1, y2 }) => x1 === x2 || y1 === y2)
-    .forEach(({ x1, x2, y1, y2 }) => {
-      for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x += 1) {
-        for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y += 1) {
-          const key = `${x},${y}`;
-          map[key] = (map[key] || 0) + 1;
-        }
-      }
-    });
-  return Object.values(map).filter((v) => v >= 2).length;
+    .reduce(reduceMap, {});
+  return countCrossings(map);
 };
 
 const part2 = (data) => {
-  const map = {};
-  data
-    .filter(({ x1, x2, y1, y2 }) => x1 === x2 || y1 === y2)
-    .forEach(({ x1, x2, y1, y2 }) => {
-      for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x += 1) {
-        for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y += 1) {
-          const key = `${x},${y}`;
-          map[key] = (map[key] || 0) + 1;
-        }
-      }
-    });
-  data
-    .filter(({ x1, x2, y1, y2 }) => !(x1 === x2 || y1 === y2))
-    .forEach(({ x1, x2, y1, y2 }) => {
-      let x = x1;
-      let y = y1;
-      const dx = x1 > x2 ? -1 : 1;
-      const dy = y1 > y2 ? -1 : 1;
-      while (x !== x2 + dx && y !== y2 + dy) {
-        const key = `${x},${y}`;
-        map[key] = (map[key] || 0) + 1;
-        x += dx;
-        y += dy;
-      }
-    });
-
-  return Object.values(map).filter((v) => v >= 2).length;
+  const map = data.reduce(reduceMap, {});
+  return countCrossings(map);
 };
 
 /* istanbul ignore next */
