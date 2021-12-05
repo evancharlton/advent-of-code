@@ -22,9 +22,10 @@ describe(DAY.replace("-", " "), () => {
     // expect(part1([])).toEqual(undefined);
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(12);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).not.toEqual(15442);
+    expect(part2(data())).toEqual(15463);
   });
 });
