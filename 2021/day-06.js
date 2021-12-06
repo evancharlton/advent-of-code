@@ -19,8 +19,27 @@ const part1 = (data, days = 80) => {
   return fish.length;
 };
 
-const part2 = (data) => {
-  return undefined;
+const census = (population) =>
+  population.reduce((acc, curr) => {
+    acc[curr] += 1;
+    return acc;
+  }, new Array(9).fill(0));
+
+const reproduce = (population) => {
+  const next = [...population];
+  next[7] += next[0];
+  const zero = next.shift();
+  next.push(zero);
+  return next;
+};
+
+const part2 = (data, days = 256) => {
+  let population = census(data);
+  for (let day = 0; day < days; day += 1) {
+    population = reproduce(population);
+  }
+
+  return population.reduce((total, v) => total + v, 0);
 };
 
 /* istanbul ignore next */
@@ -33,4 +52,6 @@ module.exports = {
   data,
   part1,
   part2,
+  census,
+  reproduce,
 };
