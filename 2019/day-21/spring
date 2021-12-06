@@ -1,0 +1,19 @@
+// T = temporary register (value store)
+// J = attempt to jump
+// A = ground 1 tile away?
+// B = ground 2 tiles away?
+// C = ground 3 tiles away?
+// D = ground 4 tiles away?
+// E = ground 5 tiles away?
+// F = ground 6 tiles away?
+// G = ground 7 tiles away?
+// H = ground 8 tiles away?
+// I = ground 9 tiles away?
+
+NOT B J 
+NOT C T
+OR T J
+AND D J 
+AND H J 
+NOT A T 
+OR T J 
