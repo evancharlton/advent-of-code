@@ -19,8 +19,35 @@ const part1 = (positions) => {
   return minimumFuelCost;
 };
 
-const part2 = (data) => {
-  return undefined;
+const costs = {};
+
+const fuelCost = (x, y) => {
+  const distance = Math.abs(x - y);
+  if (!(distance in costs)) {
+    let sum = 0;
+    for (let i = 0; i <= Math.abs(x - y); i += 1) {
+      sum += i;
+    }
+    costs[distance] = sum;
+  }
+  return costs[distance];
+};
+
+const part2 = (positions) => {
+  const min = Math.min(...positions);
+  const max = Math.max(...positions);
+
+  let minimumFuelCost = Number.MAX_SAFE_INTEGER;
+  for (let i = min; i <= max; i += 1) {
+    const fuelSpent = positions.reduce((acc, p) => {
+      return acc + fuelCost(p, i);
+    }, 0);
+    if (fuelSpent <= minimumFuelCost) {
+      minimumFuelCost = fuelSpent;
+    }
+  }
+
+  return minimumFuelCost;
 };
 
 /* istanbul ignore next */
@@ -33,4 +60,5 @@ module.exports = {
   data,
   part1,
   part2,
+  fuelCost,
 };

@@ -1,6 +1,6 @@
 const { basename } = require("path");
 const DAY = basename(__filename).replace(".spec.js", "");
-const { part1, part2, data } = require(`./${DAY}`);
+const { part1, part2, data, fuelCost } = require(`./${DAY}`);
 
 const TEST = "test data";
 const PROD = "real data";
@@ -22,9 +22,13 @@ describe(DAY.replace("-", " "), () => {
     // expect(part2([])).toEqual(undefined);
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(168);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(104822130);
+  });
+
+  test("fuelCost", () => {
+    expect(fuelCost(16, 5)).toEqual(66);
   });
 });
