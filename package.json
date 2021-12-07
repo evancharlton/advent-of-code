@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "fetch": "node get-input"
+    "fetch": "node get-input",
+    "leaderboard": "node leaderboard",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
