@@ -41,30 +41,45 @@ const CACHE_MILLIS = 1000 * 60 * 15; // Fifteen minutes
 const getLeaderboard = async () => {
   // See if it exists already
   if (fs.existsSync(inputFile)) {
-    // Is it too soon to fetch again?
-    const leaderboard = JSON.parse(fs.readFileSync(inputFile));
-    const fetchedMillis = leaderboard.fetchedMillis ?? 0;
-    const ago = Date.now() - fetchedMillis;
-    if (ago < CACHE_MILLIS) {
-      return leaderboard;
+    try {
+      const contents = fs.readFileSync(inputFile);
+      const leaderboard = JSON.parse(contents);
+      const fetchedMillis = leaderboard.fetchedMillis ?? 0;
+      const ago = Date.now() - fetchedMillis;
+      if (ago < CACHE_MILLIS) {
+        return leaderboard;
+      }
+    } catch (ex) {
+      console.warn(ex);
+      console.warn("Failed to read cached leaderboard; fetching a new one");
     }
+  } else {
+    fs.mkdirSync(path.dirname(inputFile), { recursive: true });
+    fs.writeFileSync(inputFile, "");
   }
-
-  fs.mkdirSync(path.dirname(inputFile), { recursive: true });
-  fs.writeFileSync(inputFile, "");
 
   return new Promise((resolve, reject) => {
     const url = `https://adventofcode.com/${year}/leaderboard/private/view/${leaderboardId}.json`;
 
-    http.get(
-      url,
-      { headers: { cookie: `session=${process.env.AOC_COOKIE}` } },
-      (res) => {
-        let contents = "";
-        res.on("data", (chunk) => (contents += chunk));
-        res.on("end", () => resolve(JSON.parse(contents)));
-      }
-    );
+    http
+      .get(
+        url,
+        { headers: { cookie: `session=${process.env.AOC_COOKIE}` } },
+        (res) => {
+          if (res.statusCode !== 200) {
+            reject(new Error(`HTTP ${res.statusCode}`));
+            return;
+          }
+          let contents = "";
+          res.on("data", (chunk) => {
+            contents += chunk;
+          });
+          res.on("end", () => {
+            resolve(JSON.parse(contents));
+          });
+        }
+      )
+      .on("error", (e) => reject(e));
   })
     .then((jsonObj) => {
       jsonObj.fetchedMillis = Date.now();
@@ -76,16 +91,21 @@ const getLeaderboard = async () => {
     });
 };
 
+const ONE_MINUTE = 60;
+const ONE_HOUR = ONE_MINUTE * 60;
+const ONE_DAY = ONE_HOUR * 24;
+const ONE_WEEK = ONE_DAY * 7;
+const ONE_MONTH = ONE_DAY * 30;
+const ONE_YEAR = ONE_DAY * 365;
+
 const readable = (time) => {
-  const [years, months, weeks, days, hours, minutes, seconds] = [
-    Math.floor(time / (60 * 60 * 24 * 30 * 12)),
-    Math.floor(time / (60 * 60 * 24 * 30)),
-    Math.floor(time / (60 * 60 * 24 * 7)),
-    Math.floor(time / (60 * 60 * 24)),
-    Math.floor(time / (60 * 60)),
-    Math.floor(time / 60),
-    Math.floor(time % 60),
-  ];
+  const years = Math.floor(time / ONE_YEAR);
+  const months = Math.floor((time % ONE_YEAR) / ONE_MONTH);
+  const weeks = Math.floor((time % ONE_MONTH) / ONE_WEEK);
+  const days = Math.floor((time % ONE_WEEK) / ONE_DAY);
+  const hours = Math.floor((time % ONE_DAY) / ONE_HOUR);
+  const minutes = Math.floor((time % ONE_HOUR) / ONE_MINUTE);
+  const seconds = time % 60;
 
   return [
     years ? `${years}y` : "",
