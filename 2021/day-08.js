@@ -12,17 +12,17 @@ const parse = (data) =>
   });
 
 const part1 = (data) => {
-  return parse(data).reduce((acc, { outputs }) => {
-    return (
+  return parse(data).reduce(
+    (acc, { outputs }) =>
       outputs.filter(
         (display) =>
           display.length === 2 ||
           display.length === 3 ||
           display.length === 4 ||
           display.length === 7
-      ).length + acc
-    );
-  }, 0);
+      ).length + acc,
+    0
+  );
 };
 
 const makeSet = () => new Set("abcdefg".split(""));
@@ -46,11 +46,11 @@ const eliminate = (set, values) => {
 const segmentMapping = (signals) => {
   // prettier-ignore
   const segments = [
-          makeSet(), // 0
+            makeSet(), // 0
       makeSet(),   makeSet(), // 1 2
-           makeSet(), // 3
+            makeSet(), // 3
       makeSet(),   makeSet(), // 4 5
-           makeSet(), // 6
+            makeSet(), // 6
   ];
 
   // 7
@@ -111,40 +111,24 @@ const ALPHABET = {
   ["1111011"]: 9,
 };
 
-const overlaps = (set, inputString) =>
-  inputString.split("").some((letter) => set.has(letter));
-
-const createAllMaps = (mapping) => {
-  const arrays = mapping.map((m) => [...m]);
-  let allCombinations = [""];
-  arrays.forEach((array) => {
-    const copy = allCombinations
-      .map((map) => {
-        return array.map((option) => {
-          return map.concat(option);
-        });
-      })
-      .flat();
-    allCombinations = copy;
-  });
-  return allCombinations.filter((str) => {
-    const set = new Set(str.split(""));
-    return set.size === str.length;
-  });
-};
+const createAllMaps = (mapping) =>
+  mapping
+    // Convert the sets into arrays
+    .map((m) => [...m])
+    // Create every possible map combination
+    .reduce(
+      (acc, options) =>
+        acc
+          // Explode the option into different sets
+          .map((map) => options.map((option) => map.concat(option)))
+          // Convert the arrays of arrays into just an array
+          .flat(),
+      [""]
+    )
+    // We only want the valid mappings (unique letters)
+    .filter((str) => new Set(str.split("")).size === str.length);
 
 const findNumber = (mapString, pattern) => {
-  switch (pattern.length) {
-    case 2:
-      return 1;
-    case 3:
-      return 7;
-    case 4:
-      return 4;
-    case 7:
-      return 8;
-  }
-
   const key = mapString
     .split("")
     .map((segmentLetter) => pattern.includes(segmentLetter))
@@ -163,10 +147,13 @@ const part2 = (data) => {
         // Try and parse all of the input.
         inputLoop: for (let j = 0; j < inputPatterns.length; j += 1) {
           const number = findNumber(mapStrings[i], inputPatterns[j]);
+          // If we have a map that results in an input which cannot be mapped,
+          // then we know that the mapping is invalid and we should skip it.
           if (number === undefined) {
             continue mapLoop;
           }
         }
+        // If we made it this far, then we know that we have a valid mapping
         correctMap = mapStrings[i];
       }
       if (correctMap) {
