@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "fetch": "node get-input"
+    "fetch": "node get-input",
+    "new": "npx hygen day new"
   },
   "repository": {
     "type": "git",
