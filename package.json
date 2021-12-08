@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
     "fetch": "node get-input",
-    "new": "npx hygen day new"
+    "leaderboard": "node leaderboard",
+    "new": "npx hygen day new",
+    "test": "jest",
   },
   "repository": {
     "type": "git",
