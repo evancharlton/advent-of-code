@@ -73,21 +73,17 @@ const getBasin = (rawData, nadir) => {
 };
 
 const part2 = (data) => {
-  const nadirs = findNadirs(data);
-
-  // flood fill out from each nadir until we find the borders (cells = 9)
-  const basins = {};
-  nadirs.forEach((point) => {
-    const { x, y } = point;
-    const key = `${x},${y}`;
-    basins[key] = getBasin(data, point);
-  });
-
-  return Object.values(basins)
-    .map((b) => b.length)
-    .sort((a, b) => b - a)
-    .slice(0, 3)
-    .reduce((acc, s) => acc * s);
+  return (
+    findNadirs(data)
+      // Flood fill out from each nadir until we find the borders.
+      .reduce((basins, point) => [...basins, getBasin(data, point)], [])
+      // We only care about the size of the basin.
+      .map((b) => b.length)
+      // We want the biggest ones.
+      .sort((a, b) => b - a)
+      .slice(0, 3)
+      .reduce((acc, s) => acc * s)
+  );
 };
 
 /* istanbul ignore next */
