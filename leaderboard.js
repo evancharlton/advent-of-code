@@ -13,13 +13,13 @@ const { leaderboardId, year, sort } = (() => {
     case 5: // ID, sort, year
       return {
         leaderboardId: process.argv[2],
-        sort: +process.argv[3],
+        sort: process.argv[3],
         year: process.argv[4],
       };
     case 4: // ID, sort
       return {
         leaderboardId: process.argv[2],
-        sort: +process.argv[3],
+        sort: process.argv[3],
         year: String(now.getFullYear()),
       };
     case 3: // ID
@@ -148,19 +148,38 @@ getLeaderboard().then(({ members }) => {
             name: name ?? `(anonymous user #${id})`,
             "Part 1": part1,
             "Part 2": part2,
+            "Part 2 (+)": {
+              human:
+                part2.machine === Number.MAX_SAFE_INTEGER
+                  ? "TBD"
+                  : readable(part2.machine - part1.machine),
+              machine: part2.machine - part1.machine,
+            },
           },
         ];
       }, [])
       .sort(
         (
-          { ["Part 1"]: { machine: a1 }, ["Part 2"]: { machine: a2 } },
-          { ["Part 1"]: { machine: b1 }, ["Part 2"]: { machine: b2 } }
+          {
+            ["Part 1"]: { machine: a1 },
+            ["Part 2"]: { machine: a2 },
+            ["Part 2 (+)"]: { machine: a2p },
+          },
+          {
+            ["Part 1"]: { machine: b1 },
+            ["Part 2"]: { machine: b2 },
+            ["Part 2 (+)"]: { machine: b2p },
+          }
         ) => {
           switch (sort) {
             case 1:
+            case "1":
               return a1 - b1;
             case 2:
+            case "2":
               return a2 - b2;
+            case "2+":
+              return a2p - b2p;
             default:
               throw new Error("Unrecognized sorting: " + sort);
           }
@@ -170,6 +189,7 @@ getLeaderboard().then(({ members }) => {
         ...entry,
         "Part 1": entry["Part 1"].human,
         "Part 2": entry["Part 2"].human,
+        "Part 2 (+)": entry["Part 2 (+)"].human,
       }));
 
     if (dayByDay.length > 0) {
