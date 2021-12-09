@@ -25,6 +25,6 @@ describe(DAY.replace("-", " "), () => {
     expect(part2(data("test"))).toEqual(1134);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(1050192);
   });
 });
