@@ -4,13 +4,6 @@ const data = (type = "") => {
 
 const parse = (data) => data.map((line) => line.split(""));
 
-const CLOSING = {
-  ")": "(",
-  "]": "[",
-  "}": "{",
-  ">": "<",
-};
-
 const OPENING = {
   "(": ")",
   "[": "]",
@@ -20,6 +13,7 @@ const OPENING = {
 
 const findCorruption = (line) => {
   const open = [];
+  let invalidToken = undefined;
   for (let i = 0; i < line.length; i += 1) {
     const character = line[i];
     if (character in OPENING) {
@@ -27,15 +21,11 @@ const findCorruption = (line) => {
     } else if (open[open.length - 1] === character) {
       open.pop();
     } else {
-      return character;
+      invalidToken = character;
+      break;
     }
   }
-};
-
-const findCorruptions = (data) => {
-  return parse(data)
-    .map((line) => findCorruption(line))
-    .filter(Boolean);
+  return { open, invalidToken };
 };
 
 const part1 = (data) => {
@@ -46,26 +36,11 @@ const part1 = (data) => {
     ">": 25137,
   };
 
-  return findCorruptions(data)
+  return parse(data)
+    .map((line) => findCorruption(line).invalidToken)
+    .filter(Boolean)
     .map((c) => POINTS[c])
     .reduce((acc, p) => acc + p);
-};
-
-const findCompletion = (line) => {
-  const open = [];
-  for (let i = 0; i < line.length; i += 1) {
-    const character = line[i];
-    if (character in OPENING) {
-      open.push(OPENING[character]);
-    } else if (open[open.length - 1] === character) {
-      open.pop();
-    } else {
-      throw new Error(
-        "We found a corruption - this is supposed to be impossible"
-      );
-    }
-  }
-  return open.reverse();
 };
 
 const part2 = (data) => {
@@ -78,8 +53,9 @@ const part2 = (data) => {
 
   const scores = parse(data)
     // Remove the corrupted lines; we only want the incomplete ones.
-    .filter((line) => findCorruption(line) === undefined)
-    .map((line) => findCompletion(line))
+    .map((line) => findCorruption(line))
+    .filter(({ invalidToken }) => !invalidToken)
+    .map(({ open }) => open.reverse())
     .map((completion) =>
       completion.map((c) => POINTS[c]).reduce((acc, p) => acc * 5 + p, 0)
     )
@@ -98,6 +74,5 @@ module.exports = {
   part1,
   part2,
   parse,
-  findCorruptedLines: findCorruptions,
   findCorruption,
 };

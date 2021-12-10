@@ -8,7 +8,9 @@ const PROD = "real data";
 describe(DAY.replace("-", " "), () => {
   test("findCorruption", () => {
     // expect(findCorruption([""])).toBeUndefined();
-    expect(findCorruption("{([(<{}[<>[]}>{[]{[(<()>".split(""))).toEqual("}");
+    expect(findCorruption("{([(<{}[<>[]}>{[]{[(<()>".split(""))).toMatchObject({
+      invalidToken: "}",
+    });
   });
 
   test("Part 1", () => {
