@@ -6,12 +6,12 @@ const TEST = "test data";
 const PROD = "real data";
 
 describe(DAY.replace("-", " "), () => {
-  test.only("findCorruption", () => {
+  test("findCorruption", () => {
     // expect(findCorruption([""])).toBeUndefined();
     expect(findCorruption("{([(<{}[<>[]}>{[]{[(<()>".split(""))).toEqual("}");
   });
 
-  test.only("Part 1", () => {
+  test("Part 1", () => {
     // test for simple data
     // expect(part1([])).toEqual(undefined);
 
@@ -27,9 +27,9 @@ describe(DAY.replace("-", " "), () => {
     // expect(part2([])).toEqual(undefined);
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(288957);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(2870201088);
   });
 });
