@@ -148,7 +148,7 @@ getLeaderboard().then(({ members }) => {
             name: name ?? `(anonymous user #${id})`,
             "Part 1": part1,
             "Part 2": part2,
-            "Part 2 (+)": {
+            Delta: {
               human:
                 part2.machine === Number.MAX_SAFE_INTEGER
                   ? "TBD"
@@ -163,12 +163,12 @@ getLeaderboard().then(({ members }) => {
           {
             ["Part 1"]: { machine: a1 },
             ["Part 2"]: { machine: a2 },
-            ["Part 2 (+)"]: { machine: a2p },
+            ["Delta"]: { machine: a2p },
           },
           {
             ["Part 1"]: { machine: b1 },
             ["Part 2"]: { machine: b2 },
-            ["Part 2 (+)"]: { machine: b2p },
+            ["Delta"]: { machine: b2p },
           }
         ) => {
           switch (sort) {
@@ -179,6 +179,9 @@ getLeaderboard().then(({ members }) => {
             case "2":
               return a2 - b2;
             case "2+":
+            case "delta":
+            case "diff":
+            case "d":
               return a2p - b2p;
             default:
               throw new Error("Unrecognized sorting: " + sort);
@@ -189,7 +192,7 @@ getLeaderboard().then(({ members }) => {
         ...entry,
         "Part 1": entry["Part 1"].human,
         "Part 2": entry["Part 2"].human,
-        "Part 2 (+)": entry["Part 2 (+)"].human,
+        Delta: entry["Delta"].human,
       }));
 
     if (dayByDay.length > 0) {
