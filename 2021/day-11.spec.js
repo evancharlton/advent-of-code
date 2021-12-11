@@ -49,7 +49,7 @@ describe(DAY.replace("-", " "), () => {
     expect(flashes).toEqual(45);
   });
 
-  test.only("steps", () => {
+  test("steps", () => {
     const board = createBoard(parse(data("test")));
     let current = board;
 
@@ -72,7 +72,7 @@ describe(DAY.replace("-", " "), () => {
     }
   });
 
-  test.only("Part 1", () => {
+  test("Part 1", () => {
     // test for simple data
     // expect(part1([])).toEqual(undefined);
 
@@ -94,10 +94,10 @@ describe(DAY.replace("-", " "), () => {
     // expect(part2([])).toEqual(undefined);
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(195);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(418);
   });
 });
 

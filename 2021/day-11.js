@@ -57,8 +57,7 @@ const tick = (current) => {
   }
 
   // Do more passes and propagate the flashes
-  let LIMIT = 10000;
-  while (flasherKeys.length > 0 && LIMIT-- > 0) {
+  while (flasherKeys.length > 0) {
     const key = flasherKeys.shift();
     if (flashedKeys.has(key)) {
       // console.log(`${key} has already flashed this cycle`);
@@ -168,8 +167,17 @@ const part1 = (data, steps = 100) => {
   return totalFlashes;
 };
 
-const part2 = (data) => {
-  return data;
+const part2 = (data, steps = 1000) => {
+  const board = createBoard(parse(data));
+  let current = board;
+  for (let i = 0; i < steps; i += 1) {
+    const { next } = tick(current);
+    current = next;
+    if (Object.values(next).every((v) => v === 0)) {
+      return i + 1;
+    }
+  }
+  return -1;
 };
 
 /* istanbul ignore next */
