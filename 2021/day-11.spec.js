@@ -45,7 +45,6 @@ describe(DAY.replace("-", " "), () => {
 
   test("Missing flash", () => {
     const { next, flashes } = tick(createBoard(parse(data("test-step-2"))));
-    console.log(printBoard(next));
     expect(flashes).toEqual(45);
   });
 
