@@ -6,7 +6,7 @@ const TEST = "test data";
 const PROD = "real data";
 
 describe(DAY.replace("-", " "), () => {
-  test.only("Part 1", () => {
+  test("Part 1", () => {
     // test for test data
     expect(part1(data("test"))).toEqual(10);
     expect(part1(data("test-a"))).toEqual(19);
@@ -21,9 +21,11 @@ describe(DAY.replace("-", " "), () => {
     // expect(part2([])).toEqual(undefined);
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(36);
+    expect(part2(data("test-a"))).toEqual(103);
+    expect(part2(data("test-b"))).toEqual(3509);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(108035);
   });
 });
