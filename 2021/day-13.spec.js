@@ -19,9 +19,26 @@ describe(DAY.replace("-", " "), () => {
     // expect(part2([])).toEqual(undefined);
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(
+      `
+# # # # #
+# . . . #
+# . . . #
+# . . . #
+# # # # #
+`.trim()
+    );
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(
+      `
+# # # . . . # # . . # # # . . # . . # . . # # . . # # # . . # . . # . # . . .
+# . . # . # . . # . # . . # . # . . # . # . . # . # . . # . # . # . . # . . .
+# . . # . # . . . . # . . # . # # # # . # . . # . # . . # . # # . . . # . . .
+# # # . . # . . . . # # # . . # . . # . # # # # . # # # . . # . # . . # . . .
+# . . . . # . . # . # . . . . # . . # . # . . # . # . # . . # . # . . # . . .
+# . . . . . # # . . # . . . . # . . # . # . . # . # . . # . # . . # . # # # #
+`.trim()
+    );
   });
 });

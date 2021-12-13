@@ -50,14 +50,34 @@ const part1 = ({ dots, folds }) => {
   return Object.keys(folded).length;
 };
 
-const part2 = (data) => {
-  return parse(data);
+const printGrid = (grid) => {
+  const keys = Object.keys(grid).map((key) => key.split(",").map((v) => +v));
+  const maxX = Math.max(...keys.map(([x]) => x));
+  const maxY = Math.max(...keys.map(([_, y]) => y));
+
+  const lines = [];
+  for (let y = 0; y <= maxY; y += 1) {
+    const line = [];
+    for (let x = 0; x <= maxX; x += 1) {
+      line.push(grid[`${x},${y}`] ?? ".");
+    }
+    lines.push(line.join(" "));
+  }
+  return lines.join("\n");
+};
+
+const part2 = ({ dots, folds }) => {
+  let grid = createGrid(dots);
+  for (let i = 0; i < folds.length; i += 1) {
+    grid = foldGrid(grid, folds[i]);
+  }
+  return printGrid(grid);
 };
 
 /* istanbul ignore next */
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
   console.log(`Part 1:`, part1(data(process.argv[2] || "")));
-  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
+  console.log(`Part 2:`, "\n" + part2(data(process.argv[2] || "")));
 }
 
 module.exports = {
