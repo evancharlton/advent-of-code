@@ -57,7 +57,7 @@ const astar = (map, start, goal, h) => {
 const part1 = (data) => {
   const map = new Map();
   for (let y = 0; y < data.length; y += 1) {
-    for (let x = 0; x < data.length; x += 1) {
+    for (let x = 0; x < data[y].length; x += 1) {
       map.set([x, y].join(","), data[y][x]);
     }
   }
