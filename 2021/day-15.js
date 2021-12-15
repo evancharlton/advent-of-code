@@ -19,8 +19,63 @@ const getNeighbors = (key) => {
   return [`${x},${y - 1}`, `${x + 1},${y}`, `${x},${y + 1}`, `${x - 1},${y}`];
 };
 
+const pq = (...items) => {
+  const queue = [...items];
+  const scores = new Map();
+  items.forEach((i) => {
+    scores.set(i, 0);
+  });
+
+  return {
+    length: () => queue.length,
+    take: () => {
+      const first = queue.shift();
+      return first;
+    },
+    put: (key, value) => {
+      scores.set(key, value);
+
+      if (value > scores.get(queue[queue.length - 1])) {
+        queue.push(key);
+        return;
+      }
+
+      if (value < scores.get(queue[0])) {
+        queue.unshift(key);
+        return;
+      }
+
+      // Hacky little binary search to find out where it goes.
+      let min = 0;
+      let max = queue.length;
+      let center;
+      let limit = 1000;
+      while (max - min > 1) {
+        center = min + Math.floor((max - min) / 2);
+        if (limit-- === 0) {
+          throw new Error("Idiot");
+        }
+        const item = queue[center];
+        if (!scores.has(item)) {
+          throw new Error(`Missing score for ${item}`);
+        }
+
+        const v = scores.get(item);
+        if (v > value) {
+          max = center;
+        } else if (v < value) {
+          min = center;
+        } else if (v === value) {
+          break;
+        }
+      }
+      queue.splice(center, 0, key);
+    },
+  };
+};
+
 const astar = (map, start, goal, h) => {
-  const queue = [start];
+  const queue = pq(start);
   const cameFrom = new Map();
 
   const gScore = new Map(); // ?? Number.MAX_SAFE_INTEGER
@@ -31,8 +86,8 @@ const astar = (map, start, goal, h) => {
   const f = (key) => fScore.get(key) ?? Number.MAX_SAFE_INTEGER;
   fScore.set(start, h(start));
 
-  while (queue.length > 0) {
-    const current = queue.shift();
+  while (queue.length() > 0) {
+    const current = queue.take();
     if (current === goal) {
       return getPath(cameFrom, current);
     }
@@ -45,10 +100,9 @@ const astar = (map, start, goal, h) => {
         cameFrom.set(neighbor, current);
         gScore.set(neighbor, tentativeScore);
         fScore.set(neighbor, tentativeScore + h(neighbor));
-        queue.push(neighbor);
+        queue.put(neighbor, f(neighbor));
       }
     }
-    queue.sort((a, b) => f(a) - f(b));
   }
 
   throw new Error(`No path found: astar(${map}, ${start}, ${goal})`);
@@ -111,4 +165,5 @@ module.exports = {
   data,
   part1,
   part2,
+  pq,
 };
