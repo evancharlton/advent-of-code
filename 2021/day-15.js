@@ -31,8 +31,7 @@ const astar = (map, start, goal, h) => {
   const f = (key) => fScore.get(key) ?? Number.MAX_SAFE_INTEGER;
   fScore.set(start, h(start));
 
-  let limit = 10000;
-  while (openSet.size > 0 && limit-- > 0) {
+  while (openSet.size > 0) {
     const sortedOpenSet = [...openSet].sort((a, b) => f(a) - f(b));
     const current = sortedOpenSet[0];
     if (current === goal) {
@@ -53,26 +52,25 @@ const astar = (map, start, goal, h) => {
     }
   }
 
-  throw new Error("Oops");
+  throw new Error(`No path found: astar(${map}, ${start}, ${goal})`);
 };
 
 const part1 = (data) => {
   const map = new Map();
-  let lastKey = "";
   for (let y = 0; y < data.length; y += 1) {
     for (let x = 0; x < data.length; x += 1) {
-      lastKey = `${x},${y}`;
-      map.set(lastKey, data[y][x]);
+      map.set([x, y].join(","), data[y][x]);
     }
   }
 
-  const [x, y] = lastKey.split(",").map((v) => +v);
+  const y = data.length - 1;
+  const x = data[y].length - 1;
   const h = (node) => {
     const [a, b] = node.split(",").map((v) => +v);
     return Math.abs(x - a) + Math.abs(y - b);
   };
 
-  const keys = astar(map, `0,0`, lastKey, h);
+  const keys = astar(map, `0,0`, `${x},${y}`, h);
   return keys
     .map((key) => key.split(",").map((v) => +v))
     .map(([x, y]) => data[y][x])
@@ -80,7 +78,28 @@ const part1 = (data) => {
 };
 
 const part2 = (data) => {
-  return data;
+  const megamap = [];
+  for (let m = 0; m < 5; m += 1) {
+    megamap.push(
+      ...data.map((row) => {
+        const columns = [];
+        for (let n = 0; n < 5; n += 1) {
+          columns.push(
+            row.map((v) => {
+              const next = v + n + m;
+              if (next > 9) {
+                return next - 9;
+              }
+              return next;
+            })
+          );
+        }
+        return columns.flat();
+      })
+    );
+  }
+
+  return part1(megamap);
 };
 
 /* istanbul ignore next */
