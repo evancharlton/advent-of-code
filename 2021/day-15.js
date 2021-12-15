@@ -20,7 +20,7 @@ const getNeighbors = (key) => {
 };
 
 const astar = (map, start, goal, h) => {
-  const openSet = new Set([start]);
+  const queue = [start];
   const cameFrom = new Map();
 
   const gScore = new Map(); // ?? Number.MAX_SAFE_INTEGER
@@ -31,14 +31,12 @@ const astar = (map, start, goal, h) => {
   const f = (key) => fScore.get(key) ?? Number.MAX_SAFE_INTEGER;
   fScore.set(start, h(start));
 
-  while (openSet.size > 0) {
-    const sortedOpenSet = [...openSet].sort((a, b) => f(a) - f(b));
-    const current = sortedOpenSet[0];
+  while (queue.length > 0) {
+    const current = queue.shift();
     if (current === goal) {
       return getPath(cameFrom, current);
     }
 
-    openSet.delete(current);
     const neighbors = getNeighbors(current).filter((key) => map.has(key));
     for (let i = 0; i < neighbors.length; i += 1) {
       const neighbor = neighbors[i];
@@ -47,9 +45,10 @@ const astar = (map, start, goal, h) => {
         cameFrom.set(neighbor, current);
         gScore.set(neighbor, tentativeScore);
         fScore.set(neighbor, tentativeScore + h(neighbor));
-        openSet.add(neighbor);
+        queue.push(neighbor);
       }
     }
+    queue.sort((a, b) => f(a) - f(b));
   }
 
   throw new Error(`No path found: astar(${map}, ${start}, ${goal})`);
