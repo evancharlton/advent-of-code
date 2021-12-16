@@ -3,7 +3,6 @@ const data = (type = "") => {
 };
 
 const parseHex = (hex) => {
-  log(`Parsing hex: ${hex}`);
   const bits = hex
     .split("")
     .map((v) => Number.parseInt(v, 16))
@@ -27,37 +26,16 @@ const LITERAL = 2;
 const OPERATOR_TYPE = 3;
 const FLUSH = -1;
 
-const spaces = (num) => {
-  let out = "";
-  while (out.length < num) {
-    out += " ";
-  }
-  return out;
-};
-
-const log = (...args) => {
-  if (false) {
-    console.log(...args);
-  }
-};
-
-function parseBits(bits, maxPackets = Number.MAX_SAFE_INTEGER) {
-  log(`Parsing bits: ${bits.join("")}`);
+const parseBits = (bits, maxPackets = Number.MAX_SAFE_INTEGER) => {
   let state = VERSION;
 
   const packet = {
-    id: Date.now(),
+    version: 0,
+    children: [],
   };
   const packets = [];
   let i = 0;
   while (i < bits.length && packets.length < maxPackets) {
-    log(
-      [bits.join(""), `${spaces(i)}^`, `state = ${state}, i = ${i}`, ""].join(
-        "\n"
-      ),
-      packet,
-      packets
-    );
     switch (state) {
       case VERSION: {
         const version = Number.parseInt(
@@ -108,13 +86,9 @@ function parseBits(bits, maxPackets = Number.MAX_SAFE_INTEGER) {
             bits.slice(i, i + subpacketSize)
           );
           i += subpacketSize;
-          packets.push(
-            ...subpackets.map((p) => ({ ...p, parentId: packet.id }))
-          );
-          log(
-            `Parsed ${subpacketSize} bits of subpackets into ${subpackets.length} packets`,
-            packets
-          );
+          packet.children = subpackets.map((p) => ({
+            ...p,
+          }));
           state = FLUSH;
         } else if (type === 1) {
           const subpacketCount = Number.parseInt(
@@ -126,14 +100,10 @@ function parseBits(bits, maxPackets = Number.MAX_SAFE_INTEGER) {
             bits.slice(i),
             subpacketCount
           );
-          packets.push(
-            ...subpackets.map((p) => ({ ...p, parentId: packet.id }))
-          );
+          packet.children = subpackets.map((p) => ({
+            ...p,
+          }));
           i += consumedBits;
-          log(
-            `Parsed ${subpacketCount} subpackets into ${subpackets.length} packets`,
-            packets
-          );
           state = FLUSH;
         }
         break;
@@ -145,34 +115,78 @@ function parseBits(bits, maxPackets = Number.MAX_SAFE_INTEGER) {
       }
     }
     if (state === FLUSH) {
-      log("Flushing", packet);
       packets.push({ ...packet });
       packet.version = -1;
       packet.value = -1;
       packet.type = -1;
-      packet.id = Date.now();
       state = VERSION;
     }
   }
-  if (packet.value > 0) {
-    packets.push({ ...packet });
-  }
-  const out = {
+  return {
     packets,
     consumedBits: i,
   };
-  log(`===>`, out);
-  return out;
-}
+};
+
+const getVersions = (packet) => {
+  return [packet.version, packet.children.map((child) => getVersions(child))];
+};
 
 const part1 = (data) => {
   const { packets } = parseHex(data);
-  log(packets);
-  return packets.map(({ version }) => version).reduce((acc, v) => acc + v, 0);
+  const versions = packets
+    .map((packet) => getVersions(packet))
+    .flat(Number.MAX_SAFE_INTEGER);
+  console.log(versions.join(" "));
+  return versions.reduce((acc, v) => acc + v, 0);
+};
+
+const expression = (packet) => {
+  if (packet.children.length === 0) {
+    return packet.value;
+  }
+
+  const { children } = packet;
+
+  switch (packet.type) {
+    case 0: {
+      // sum
+      return children.reduce((acc, child) => acc + expression(child), 0);
+    }
+    case 1: {
+      // product
+      return children.reduce((acc, child) => acc * expression(child), 1);
+    }
+    case 2: {
+      const values = children.map((child) => expression(child));
+      return Math.min(...values);
+    }
+    case 3: {
+      const values = children.map((child) => expression(child));
+      return Math.max(...values);
+    }
+    case 5: {
+      const [first, second] = children;
+      return expression(first) > expression(second) ? 1 : 0;
+    }
+    case 6: {
+      const [first, second] = children;
+      return expression(first) < expression(second) ? 1 : 0;
+    }
+    case 7: {
+      const [first, second] = children;
+      return expression(first) === expression(second) ? 1 : 0;
+    }
+    default: {
+      return packet.value;
+    }
+  }
 };
 
 const part2 = (data) => {
-  return data;
+  const { packets } = parseHex(data);
+  const [root] = packets;
+  return expression(root);
 };
 
 /* istanbul ignore next */
