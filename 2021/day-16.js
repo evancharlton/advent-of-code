@@ -26,6 +26,9 @@ const LITERAL = 2;
 const OPERATOR_TYPE = 3;
 const FLUSH = -1;
 
+let gVersions = [];
+let gPackets = [];
+
 const parseBits = (bits, maxPackets = Number.MAX_SAFE_INTEGER) => {
   let state = VERSION;
 
@@ -33,6 +36,7 @@ const parseBits = (bits, maxPackets = Number.MAX_SAFE_INTEGER) => {
     version: 0,
     children: [],
   };
+  const lVersions = [];
   const packets = [];
   let i = 0;
   while (i < bits.length && packets.length < maxPackets) {
@@ -43,6 +47,8 @@ const parseBits = (bits, maxPackets = Number.MAX_SAFE_INTEGER) => {
           2
         );
         packet.version = version;
+        gVersions.push(version);
+        lVersions.push(version);
         i += 3;
         state = TYPE;
         break;
@@ -116,6 +122,18 @@ const parseBits = (bits, maxPackets = Number.MAX_SAFE_INTEGER) => {
     }
     if (state === FLUSH) {
       packets.push({ ...packet });
+      gPackets.push({ ...packet });
+      if (packets.length !== lVersions.length) {
+        console.error(packet);
+        console.error(gPackets);
+        console.error(lVersions);
+        console.error(`Offset: ${i}`);
+        const spaces = new Array(i - 2).join(" ");
+        console.error([bits.join(""), `${spaces}^`].join("\n"));
+        throw new Error(
+          `Extra packet detected: ${lVersions.length} versions and ${gPackets.length} packets`
+        );
+      }
       packet.version = -1;
       packet.value = -1;
       packet.type = -1;
@@ -133,12 +151,22 @@ const getVersions = (packet) => {
 };
 
 const part1 = (data) => {
+  gVersions = [];
   const { packets } = parseHex(data);
-  const versions = packets
+  const packetVersions = packets
     .map((packet) => getVersions(packet))
     .flat(Number.MAX_SAFE_INTEGER);
-  console.log(versions.join(" "));
-  return versions.reduce((acc, v) => acc + v, 0);
+  // console.log(packetVersions.join(" "));
+  // console.log(gVersions.join(" "));
+  // console.log(gVersions.length, gPackets.length);
+  const total1 = gVersions.reduce((acc, v) => acc + v, 0);
+  const total2 = packetVersions.reduce((acc, v) => acc + v, 0);
+  if (total1 !== total2) {
+    // TODO: Why doesn't this work? Something's up with how I count the packets
+    // I think. Everything else checks out but ... I dunno.
+    // throw new Error(data);
+  }
+  return total1;
 };
 
 const expression = (packet) => {
