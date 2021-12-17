@@ -109,8 +109,10 @@ const simulate = (target, initialVelocity) => {
 const part1 = (target) => {
   let maximumY = 0;
   let bestSim = null;
-  for (let vX = 0; vX < 100; vX += 1) {
-    for (let vY = 0; vY < 100; vY += 1) {
+  // I don't know how ot math out these limits, so I just guess-and-checked
+  // until the result stabilized.
+  for (let vX = 1; vX < 100; vX += 1) {
+    for (let vY = target.y.min; vY < 100; vY += 1) {
       const initialV = { x: vX, y: vY };
       const simulation = simulate(target, initialV);
       if (!simulation) {
@@ -133,8 +135,23 @@ const part1 = (target) => {
   return maximumY;
 };
 
-const part2 = (data) => {
-  return data;
+const part2 = (target) => {
+  const valid = new Set();
+  // I don't know how ot math out these limits, so I just guess-and-checked
+  // until the result stabilized.
+  for (let vX = 1; vX < 1000; vX += 1) {
+    for (let vY = target.y.min; vY < 100; vY += 1) {
+      const initialV = { x: vX, y: vY };
+      const simulation = simulate(target, initialV);
+      if (!simulation) {
+        continue;
+      }
+
+      valid.add(`${vX},${vY}`);
+    }
+  }
+
+  return valid.size;
 };
 
 /* istanbul ignore next */

@@ -17,9 +17,9 @@ describe(DAY.replace("-", " "), () => {
 
   test("Part 2", () => {
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(112);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(2709);
   });
 });
