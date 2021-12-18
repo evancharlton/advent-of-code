@@ -371,7 +371,26 @@ const part1 = (data) => {
 };
 
 const part2 = (data) => {
-  return null;
+  const trees = data
+    .map((line) => JSON.parse(line))
+    .map((pair) => parseTree(pair));
+  let highest = 0;
+
+  for (let i = 0; i < trees.length; i += 1) {
+    for (let j = 0; j < trees.length; j += 1) {
+      if (i === j) {
+        continue;
+      }
+      const pair = [
+        JSON.parse(JSON.stringify(trees[i])),
+        JSON.parse(JSON.stringify(trees[j])),
+      ];
+
+      highest = Math.max(highest, calculateMagnitude(sumTrees(pair)));
+    }
+  }
+
+  return highest;
 };
 
 /* istanbul ignore next */
