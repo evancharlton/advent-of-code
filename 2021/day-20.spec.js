@@ -17,11 +17,11 @@ describe(DAY.replace("-", " "), () => {
     expect(part1(data())).toEqual(5498);
   });
 
-  test.skip("Part 2", () => {
+  test("Part 2", () => {
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST);
+    expect(part2(data("test"))).toEqual(3351);
 
     // test for real data
-    expect(part2(data())).toEqual(PROD);
+    expect(part2(data())).toEqual(16014);
   });
 });

@@ -27,7 +27,7 @@ const k = (x, y) => `${x},${y}`;
 
 const xy = (k) => k.split(",").map((v) => +v);
 
-const getPixelString = (image, x, y, fallback) => {
+const getPixelString = (image, x, y, infinitePixel) => {
   return [
     k(x - 1, y - 1),
     k(x, y - 1),
@@ -39,7 +39,7 @@ const getPixelString = (image, x, y, fallback) => {
     k(x, y + 1),
     k(x + 1, y + 1),
   ]
-    .map((key) => image[key] ?? fallback)
+    .map((key) => image[key] ?? infinitePixel)
     .join("");
 };
 
@@ -80,71 +80,53 @@ const print = (image) => {
   let out = "";
   for (let y = minY; y <= maxY; y += 1) {
     for (let x = minX; x <= maxX; x += 1) {
-      out += image[k(x, y)];
+      out += image[k(x, y)] + " ";
     }
     out += "\n";
   }
   return out;
 };
 
-const part1 = ({ algorithm, image }, loops = 2) => {
+const part1 = (input) => {
+  return enhance(input, 2);
+};
+
+const enhance = ({ algorithm, image }, loops = 2) => {
   let workspace = { ...image };
 
-  const margin = 10;
+  const margin = 1;
 
   for (let l = 0; l < loops; l += 1) {
-    console.log(`Iteration ${l}`);
-    console.log(print(workspace));
-    const [minX, maxX, minY, maxY] = getBounds(image);
+    const [minX, maxX, minY, maxY] = getBounds(workspace);
     const next = {};
     for (let y = minY - margin; y <= maxY + margin; y += 1) {
       for (let x = minX - margin; x <= maxX + margin; x += 1) {
-        console.log(`${x},${y}:`);
         const pixelString = getPixelString(
           workspace,
           x,
           y,
-          l % 2 === 0 ? "." : "#"
+          l % 2 === 0 ? "." : algorithm[0]
         );
-        console.log(`  pixelString: ${pixelString}`);
         const bits = toBits(pixelString);
-        console.log(`  bits: ${bits}`);
         const offset = Number.parseInt(bits, 2);
-        console.log(`  offset: ${offset}`);
         const output = algorithm[offset];
-        console.log(`  output: ${output}`);
         next[k(x, y)] = output;
       }
     }
-    console.log(`Iteration ${l + 1}`);
-    console.log(print(next));
     workspace = next;
   }
-
-  const [minX, maxX, minY, maxY] = getBounds(workspace);
-  for (let x = minX; x <= maxX; x += 1) {
-    workspace[k(x, minY)] = "?";
-    workspace[k(x, maxY)] = "?";
-  }
-
-  for (let y = minY; y <= maxY; y += 1) {
-    workspace[k(minX, y)] = "?";
-    workspace[k(maxX, y)] = "?";
-  }
-  console.log(`Final `);
-  console.log(print(workspace));
 
   return Object.values(workspace).filter((v) => v === "#").length;
 };
 
 const part2 = (data) => {
-  return data;
+  return enhance(data, 50);
 };
 
 /* istanbul ignore next */
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
-  console.log(`Part 1:`, part1(data(process.argv[2] || ""), 2));
-  // console.log(`Part 2:`, part2(data(process.argv[2] || "")));
+  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
+  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
 }
 
 module.exports = {
