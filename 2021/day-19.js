@@ -34,20 +34,23 @@ const FLIP_MAP = {
 
 const FLIPS = Object.keys(FLIP_MAP);
 
-const ROT_MAP = {
+const ROTATION_MAP = {
   0: ([x, y, z]) => [x, y, z],
   90: ([x, y, z]) => [y, -x, z],
   180: ([x, y, z]) => [-x, -y, z],
   270: ([x, y, z]) => [-y, x, z],
 };
 
-const ROTS = Object.keys(ROT_MAP);
+const ROTATIONS = Object.keys(ROTATION_MAP);
 
 const getCompleteMap = (scans) => {
   const queue = [...scans];
   const { data: referenceScan } = queue.shift();
   const knownMap = createMap(referenceScan);
   const knownVectors = getVectors(knownMap);
+  const scannerPositions = {
+    1: "0,0,0",
+  };
 
   const n = queue.length;
   let limit = (n * (n + 1)) / 2;
@@ -68,11 +71,9 @@ const getCompleteMap = (scans) => {
     const knownBeaconIds = Object.keys(knownMap);
 
     flipLoop: for (let f = 0; f < FLIPS.length; f += 1) {
-      // console.log(`  Checking flip: ${FLIPS[f]}`);
       const flip = FLIP_MAP[FLIPS[f]];
-      rotationLoop: for (let r = 0; r < ROTS.length; r += 1) {
-        // console.log(`    Checking rotation: ${ROTS[r]}`);
-        const rot = ROT_MAP[ROTS[r]];
+      rotationLoop: for (let r = 0; r < ROTATIONS.length; r += 1) {
+        const rot = ROTATION_MAP[ROTATIONS[r]];
         const transformedBeacons = trialBeacons.map((beacon) =>
           flip(rot(beacon))
         );
@@ -106,31 +107,19 @@ const getCompleteMap = (scans) => {
             const [trialX, trialY, trialZ] = toXyz(
               trialBeaconIds[trialBeaconI]
             );
-            // console.log(`      Hypothesis:`);
 
             const [diffX, diffY, diffZ] = [
               trialX - knownX,
               trialY - knownY,
               trialZ - knownZ,
             ];
-            // console.log(
-            //   `      ${knownX},${knownY},${knownZ} = ${trialX},${trialY},${trialZ}`,
-            //   `=> ${diffX},${diffY},${diffZ}`
-            // );
 
             const slidBeaconIds = transformedBeacons
               .map(([x, y, z]) => {
                 const after = [x - diffX, y - diffY, z - diffZ];
-                // console.log(
-                //   `          (${x} - ${diffX}),(${y} - ${diffY}),(${z} - ${diffZ})  => ${after}`
-                // );
                 return after;
               })
-              .map(toKey)
-              .map((key) => {
-                // console.log(`        ${key}`);
-                return key;
-              });
+              .map(toKey);
 
             const overlappingIds = slidBeaconIds.filter((id) => !!knownMap[id]);
 
@@ -145,6 +134,9 @@ const getCompleteMap = (scans) => {
               knownMap[id] = (knownMap[id] ?? 0) + 1;
             });
 
+            // Record where the scanners are.
+            scannerPositions[name] = toKey([diffX, diffY, diffZ]);
+
             // And move on to the next scan set.
             continue queueLoop;
           }
@@ -153,16 +145,7 @@ const getCompleteMap = (scans) => {
     }
     queue.push(record);
   }
-  return knownMap;
-};
-
-const DEBUG = process.argv.includes("--debug");
-const ogDebug = console.debug;
-console.debug = (...args) => {
-  if (!DEBUG) {
-    return;
-  }
-  ogDebug(...args);
+  return { beacons: knownMap, scanners: scannerPositions };
 };
 
 const toXyz = (key) => key.split(",").map((v) => +v);
@@ -232,8 +215,6 @@ const getVectors = (beaconMap) => {
         }
       }
 
-      // console.log(`going from ${toKey(from)} to ${toKey(to)}`);
-
       // Record this in the map for lookup later.
       beaconDistances[distance] = beaconDistances[distance] ?? new Set();
       beaconDistances[distance].add(
@@ -249,12 +230,30 @@ const createMap = (beacons) => {
 };
 
 const part1 = (scans) => {
-  const completeMap = getCompleteMap(scans);
-  return Object.keys(completeMap).length;
+  const { beacons } = getCompleteMap(scans);
+  return Object.keys(beacons).length;
 };
 
 const part2 = (scans) => {
-  return scans;
+  const { scanners } = getCompleteMap(scans);
+
+  const scannerIds = Object.keys(scanners);
+  let maximumDistance = 0;
+  for (let a = 0; a < scannerIds.length; a += 1) {
+    for (let b = 0; b < scannerIds.length; b += 1) {
+      if (a === b) {
+        continue;
+      }
+
+      const [ax, ay, az] = toXyz(scanners[scannerIds[a]]);
+      const [bx, by, bz] = toXyz(scanners[scannerIds[b]]);
+      maximumDistance = Math.max(
+        maximumDistance,
+        Math.abs(ax - bx) + Math.abs(ay - by) + Math.abs(az - bz)
+      );
+    }
+  }
+  return maximumDistance;
 };
 
 /* istanbul ignore next */
