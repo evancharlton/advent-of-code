@@ -12,7 +12,13 @@ const pad = (s, l) => {
   return out;
 };
 
-let maxZ = 0;
+const ogDebug = console.debug;
+console.debug = process.argv.includes("--debug")
+  ? (...args) => {
+      ogDebug(...args);
+    }
+  : () => undefined;
+
 const alu = (
   program,
   inputQueue,
@@ -71,11 +77,13 @@ const alu = (
       default:
         throw new Error(`Unknown instruction: ${ins}`);
     }
-    if (JSON.stringify(startRegisters) !== JSON.stringify(registers)) {
-      // console.log(`${pad(ins, 10)} =>`, registers);
+    // if (JSON.stringify(startRegisters) !== JSON.stringify(registers)) {
+    if (ins.startsWith("inp")) {
+      console.debug("");
     }
+    console.debug(`${pad(ins, 10)} =>`, registers);
+    // }
   }
-  maxZ = Math.max(maxZ, registers.z);
   return registers;
 };
 
@@ -97,6 +105,11 @@ const getSegments = (program) => {
 };
 
 const go = (segments, { zLimit, zTarget, inputs, i }) => {
+  console.log(
+    `go(segments[${i}], { zLimit: ${zLimit}, zTarget: ${zTarget}, inputs: [${inputs.join(
+      ", "
+    )}] })`
+  );
   if (segments.length === 0) {
     const output = inputs.join("");
     console.log("Found a valid number:", output);
@@ -105,124 +118,167 @@ const go = (segments, { zLimit, zTarget, inputs, i }) => {
   const segment = segments.shift();
 
   const acc = [];
-  wLoop: for (let w = 9; w >= 1; w -= 1) {
-    zLooop: for (let z = 0; z < zLimit; z += 1) {
+  wLoop: for (let w = 1; w <= 9; w += 1) {
+    console.log(`  => w = ${w}`);
+    zLoop: for (let z = 0; z < zLimit; z += 1) {
       const { z: out } = alu(segment, [w], { z });
       if (out === zTarget) {
         console.log(
-          `alu(segments[${i}], [${w}], { z: ${z} }) yields the right registers`,
-          `(input: ${inputs.join("")})`
+          `  alu(segments[${i}], [${w}], { z: ${z} }) yields the right registers`,
+          `(input: ${w}${inputs.join("")})`
         );
-        console.log(`  => ${out}`);
+        console.log(`    => ${out}`);
         // We found a valid w + z combo that will yield the right z output.
         // Let's see if we can generate the right inputs.
         acc.push(
           go([...segments], {
-            zLimit: Math.min(142443066, zLimit * 10),
+            zLimit: Math.min(2600000, zLimit * 10),
             zTarget: z,
             inputs: [w, ...inputs],
             i: i + 1,
           })
         );
+        break zLoop;
       }
     }
   }
   return acc.flat();
 };
 
-const part1 = (program) => {
-  const segments = getSegments(program);
-  const done = go(
-    [...segments].reverse(),
-    // [
-    //   segments.pop(),
-    //   segments.pop(),
-    //   segments.pop(),
-    //   segments.pop(),
-    //   segments.pop(),
-    //   // segments.pop()
-    // ],
-    {
-      zLimit: 26,
-      zTarget: 0,
-      inputs: [],
-      i: 0,
+const go2 =
+  (program) =>
+  (segments, { zLimit, zTarget, inputs, i }, recurse) => {
+    const bounds = [0, zLimit];
+    console.log(
+      `go2(program@${i}, { zLimit: ${zLimit}, zTarget: ${zTarget}, inputs: [${inputs.join(
+        ", "
+      )}] })`
+    );
+    if (i >= 5) {
+      console.log(`Hit the depth limit; stopping after ${inputs.join("")}`);
+      return;
     }
-  );
-  return done.map((v) => +v).sort((a, b) => b - a);
-};
+    if (segments.length === 0) {
+      const output = inputs.join("");
+      const { z: sanity } = alu(
+        program,
+        inputs.map((v) => +v)
+      );
+      console.log("Found a valid number:", output);
+      console.log(`  This input yields: z=${sanity}`);
+      return;
+    }
+    const [segment, ...rest] = segments;
 
-const part1_2 = (program) => {
-  const programSegments = getSegments(program);
-
-  const limits = [260, 2600, 26000, 260000];
-  let l = 0;
-
-  let targetZ = new Set([0]);
-  const options = new Array(programSegments.length);
-  for (let i = programSegments.length - 1; i >= 0; i -= 1) {
-    options[i] = new Set();
-    const segment = programSegments.pop();
-    const nextZTargets = new Set();
-    const validPairs = [];
-    wLoop: for (let w = 1; w <= 9; w += 1) {
-      zLooop: for (let z = 0; z < limits[l]; z += 1) {
+    const acc = [];
+    zLoop: for (let z = bounds[0]; z <= bounds[1]; z += 1) {
+      if (z && z % 100_000 === 0) {
+        console.log(`Checking z: ${z} ... @ ${i}`);
+      }
+      wLoop: for (let w = 1; w <= 9; w += 1) {
         const { z: out } = alu(segment, [w], { z });
-        if (targetZ.has(out)) {
-          // We found something that generated the right output.
-          // This means that it's our target for the next input.
-          nextZTargets.add(z);
-          options[i].add(w);
-          validPairs.push([w, z, out]);
+        // console.log(`alu(segments[${i}], [${w}], { z: ${z} }) => ${out}`);
+        if (out === zTarget) {
+          // Recurse!
+          recurse(
+            rest,
+            {
+              zLimit: zLimit * 25,
+              zTarget: z,
+              inputs: [w, ...inputs],
+              i: i + 1,
+            },
+            recurse
+          );
+          if (w === 9) {
+            console.log(
+              `Found a match for w=9 @ ${i}; not checking any more z values`
+            );
+            break zLoop;
+          }
         }
       }
     }
-    l += 1;
-    console.log(
-      `For segment ${i}, the following states generated the desired outputs.`
+    console.warn(
+      `Didn't find any valid inputs for z:[${-zLimit},${zLimit}] for zTarget: ${zTarget} @ ${i}`
     );
-    console.log(`  desired z values: ${[...targetZ].join(" ")}`);
-    const zMap = validPairs.reduce((acc, [w, z]) => {
-      const next = { ...acc };
-      next[w] = next[z] ?? new Set();
-      next[w].add(z);
-      return next;
-    }, {});
-    console.log(validPairs);
-    const wValues = Object.keys(zMap)
-      .map((v) => +v)
-      .sort((a, b) => b - a);
-    const highestW = wValues.shift();
-    console.log(`  The highest W value is ${highestW}`);
-    const zValues = zMap[highestW];
-    console.log(`  .. and the Z values are`, zValues);
-    targetZ = zValues;
-  }
+    return;
+  };
 
-  return options;
-
-  return alu(
-    program,
-    "99999999999997".split("").map((v) => +v)
+const go3 = (segments, { step, zTarget, inputs }) => {
+  const [zMin, zMax] = [1, 2, 3, 4, 5, 6, 7, 8, 9].reduce(
+    ([zMin, zMax], w) => {
+      const program = segments.slice(0, segments.length - step).flat();
+      const { z } = alu(program, [w, w, w, w, w, w, w, w, w, w, w, w, w, w]);
+      return [Math.min(z, zMin), Math.max(z, zMax)];
+    },
+    [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]
   );
+
+  return [zMin, zMax];
 };
 
-const part1_1 = (program) => {
+const part1 = (program) => {
+  return alu(
+    program,
+    "98491959997994".split("").map((v) => +v)
+  );
+
+  const segments = getSegments(program);
+
+  const fn = (() => {
+    switch (process.env.GO_FUNC) {
+      case "1":
+        return go;
+      case "2":
+        return go2(program);
+      case "3":
+        return () => {
+          return go3(segments, { step: 1, zTarget: 0, inputs: [] });
+        };
+      default:
+        throw new Error("Unknown gofunc");
+    }
+  })();
+  const done =
+    fn(
+      [...segments].reverse(),
+      // [
+      //   segments.pop(),
+      //   segments.pop(),
+      //   segments.pop(),
+      //   segments.pop(),
+      //   segments.pop(),
+      //   // segments.pop()
+      // ],
+      {
+        zLimit: 26,
+        zTarget: 0,
+        inputs: [],
+        i: 0,
+      },
+      fn
+    ) ?? [];
+  return done.map((v) => +v).sort((a, b) => b - a);
+};
+
+const part1_1 = (program, start) => {
   let digits = [];
-  for (let a = 9; a >= 1; a -= 1) {
-    for (let b = 9; b >= 1; b -= 1) {
-      for (let c = 9; c >= 1; c -= 1) {
-        for (let d = 9; d >= 1; d -= 1) {
-          for (let e = 9; e >= 1; e -= 1) {
-            for (let f = 9; f >= 1; f -= 1) {
-              for (let g = 9; g >= 1; g -= 1) {
-                for (let h = 9; h === 9; h -= 1) {
-                  for (let i = 9; i === 9; i -= 1) {
-                    for (let j = 9; j === 9; j -= 1) {
-                      for (let k = 7; k === 7; k -= 1) {
-                        for (let l = 9; l === 9; l -= 1) {
-                          for (let m = 9; m === 9; m -= 1) {
-                            for (let n = 4; n === 4; n -= 1) {
+  // prettier-ignore
+  for (let a = 6; a <= 9; a += 1) { // w0
+    for (let b = 1; b <= 9; b += 1) { // w1
+      for (let c = 1; c <= 9; c += 1) { // w2
+        for (let d = 9; d <= 9; d += 1) { // w3 - known
+          for (let e = 1; e <= 1; e += 1) { // w4 -  known
+            for (let f = 1 + 4; f <= 9; f += 1) { // w5
+              for (let g = f - 4; g <= 9; g += 1) { // w6 - must be w5 - 4
+                for (let h = c + 5; h <= 9; h += 1) { // w7
+                  for (let i = 1; i <= 9; i += 1) { // w8
+                    /*for (let j = 1; j <= 9; j += 1)*/ const j = i; { // w9 - must == w8
+                      for (let k = 1; k <= 9 - 2; k += 1) { // w10
+                        for (let l = k + 2; l <= 9; l += 1) { // w11
+                          for (let m = b + 1; m <= 9; m += 1) { // w12
+                            for (let n = a - 5; n <= 9; n += 1) { // w13
                               digits = [
                                 a,
                                 b,
@@ -239,6 +295,11 @@ const part1_1 = (program) => {
                                 m,
                                 n,
                               ];
+                              if (digits.length !== 14) {
+                                throw new Error(
+                                  `wrong number of digits ${digits.length} != 14`
+                                );
+                              }
                               const registers = alu(program, digits);
                               const { z } = registers;
                               if (z === 0) {
@@ -248,18 +309,17 @@ const part1_1 = (program) => {
                           }
                         }
                       }
+                      console.log(digits.join(""));
                     }
                   }
                 }
               }
-              console.log(digits.join(""));
             }
           }
         }
       }
     }
   }
-  return "waht";
 };
 
 const part2 = (data) => {
@@ -268,13 +328,8 @@ const part2 = (data) => {
 
 /* istanbul ignore next */
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
-  console.log(
-    `Part 1:`,
-    part1_1(
-      data(process.argv[2] || ""),
-      process.argv.slice(3).map((v) => +v)
-    )
-  );
+  const fn = process.env.OPERATION === "brute" ? part1_1 : part1;
+  console.log(`Part 1:`, fn(data(process.argv[2] || ""), process.argv[3]));
 
   // console.log(`Part 2:`, part2(data(process.argv[2] || "")));
 }

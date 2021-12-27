@@ -1,0 +1,145 @@
+inp w
+add z w
+add z 2
+// z = w + 2
+
+inp w
+mul z 26
+add z w
+add z 16
+// z = (z * 26) + w + 16 
+
+inp w
+mul z 26
+add z w
+add z 9
+// z = (z * 26) + w + 9
+
+// w3
+inp w
+mul z 26
+add z w
+// z = (z * 26) + w3
+// z = (z * 26) + w
+// z = (((((((w0 + 2) * 26) + w1 + 16) * 26) + w2 + 9) * 26) + w3)
+// z = ((((((((26^1)w0 + (26^1)2)) + w1 + 16) * 26) + w2 + 9) * 26) + w3)
+// z = (((((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16) + w2 + 9) * 26) + w3)
+// z = ((((26^3)w0 + (26^3)2 + (26^2)w1 + (26^2)16) + (26^1)w2 + (26^1)9) + w3)
+
+// w4
+inp w
+mul x 0
+add x z
+mod x 26
+// x = w3
+add x -8
+// x = w3 - 8
+eql x w
+// x = (w3 - 8) == w ? 1 : 0
+eql x 0
+// x = (w3 - 8) != w ? 1 : 0
+// The only valid input for w3 is 9
+// The only valid input for w4 is 1
+// This means that x must be zero (for all valid inputs)
+// y = (25 * x) + 1
+// y = 1 (for all valid inputs)
+// z = ((((26^3)w0 + (26^3)2 + (26^2)w1 + (26^2)16) + (26^1)w2 + (26^1)9) + w3)
+div z 26
+// z = ((((26^3)w0 + (26^3)2 + (26^2)w1 + (26^2)16) + (26^1)w2 + (26^1)9) + w3) / 26
+// z = (((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16) + (26^0)w2 + (26^0)9)
+
+// w5
+inp w
+mul z 26
+add z w
+add z 12
+// z = ((z) * 26) + w5 + 12
+// z = ((((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16) + (26^0)w2 + (26^0)9) * 26) + w5 + 12
+// z = (((26^3)w0 + (26^3)2 + (26^2)w1 + (26^2)16) + (26^1)w2 + (26^1)9) + w5 + 12
+
+// w6
+inp w
+// x is guaranteed to be 0 for all valid numbers
+// y is guaranteed to be 1 for all valid numbers
+// z = (((26^3)w0 + (26^3)2 + (26^2)w1 + (26^2)16) + (26^1)w2 + (26^1)9) + w5 + 12
+div z 26
+// z = (((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16) + (26^0)w2 + (26^0)9)
+mul y 0
+
+// w7
+inp w
+mul x 0
+add x z
+mod x 26
+// x = ((26^0)w2 + (26^0)9)
+add x -4
+// x = w2 + 5
+// This means that w7 must be w2 + 5
+eql x w
+eql x 0
+// x is guaranteed to be 0 for all valid numbers
+div z 26
+// z = ((26^1)w0 + (26^1)2 + (26^0)w1 + (26^0)16)
+
+// w8
+inp w
+// x is guaranteed to be 1
+mul z 26
+// z = ((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16)
+add z w
+add z 3
+// z = ((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16) + w8 + 3
+
+// w9
+inp w
+// Restriction: w9 == w8
+// x is guaranteed to be 0 for all valid numbers
+div z 26
+// z = ((26^1)w0 + (26^1)2 + (26^0)w1 + (26^0)16)
+
+// w10
+inp w
+mul z 26
+// z = ((26^1)w0 + (26^1)2 + (26^0)w1 + (26^0)16) * 26
+// z = ((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16)
+add z w
+add z 9
+// z = ((26^2)w0 + (26^2)2 + (26^1)w1 + (26^1)16) + w10 + 9
+
+// w11
+inp w
+// Restriction: w11 == w10 + 2
+// For all valid numbers, x is guaranteed to be 0
+div z 26
+// z = ((26^1)w0 + (26^1)2 + (26^0)w1 + (26^0)16)
+
+// w12
+inp w
+// Restriction: w12 = w1 + 1
+// For valid numbers, x is guaranteed to be zero
+div z 26
+// z = ((26^0)w0 + (26^0)2
+
+// w13
+inp w
+mul x 0
+add x z
+mod x 26
+// x = w0 + 2
+add x -7
+// x = w0 - 5
+eql x w
+eql x 0
+// Restriction: w13 = w0 - 5
+// For all valid numbers, x is guaranteed to be zero
+mul y 0
+add y 25
+mul y x
+add y 1
+div z 26
+mul z y
+mul y 0
+add y w
+add y 3
+mul y x
+add z y

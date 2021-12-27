@@ -6,7 +6,13 @@ const TEST = "test data";
 const PROD = "real data";
 
 describe(DAY.replace("-", " "), () => {
-  test("Part 1", () => {
+  test("alu", () => {
+    for (const inp of ["98491959997994"]) {
+      const input = inp.split("").map((v) => +v);
+      expect(alu(data("debug"), input)).toMatchObject(alu(data(), input));
+    }
+  });
+  test.skip("Part 1", () => {
     // test for test data
     expect(alu(data("neg"), [10]).x).toEqual(-10);
 
