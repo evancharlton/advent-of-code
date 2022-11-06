@@ -12,8 +12,17 @@ const date = process.argv[2] || (() => `0${now.getDate()}`.substr(-2))();
 const month = now.getMonth();
 const year = process.argv[3] || (() => String(now.getFullYear()))();
 
-const inputFile = path.join(year, "input", `day-${date}.txt`);
-const testFile = path.join(year, "input", `day-${date}.test.txt`);
+const [inputFile, testFile] = ((y, d) => {
+  switch (y) {
+    case "2019":
+      return [path.join(y, `day-${d}`, "input")];
+    default:
+      return [
+        path.join(y, "input", `day-${d}.txt`),
+        path.join(year, "input", `day-${d}.test.txt`),
+      ];
+  }
+})(year, date);
 
 if (!process.argv[3] && month !== 11) {
   console.error(
@@ -37,6 +46,6 @@ http.get(
   (res) => res.pipe(out)
 );
 
-if (!fs.existsSync(testFile)) {
+if (testFile && !fs.existsSync(testFile)) {
   fs.writeFileSync(testFile, "");
 }

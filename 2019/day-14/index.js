@@ -8,6 +8,8 @@ const spaces = (a) => {
   return out;
 };
 
+const VERBOSE = false;
+
 readLines(`${__dirname}/input`)
   .then(async (equations) => {
     return equations.map((equation) => {
@@ -32,6 +34,10 @@ readLines(`${__dirname}/input`)
           ...item,
           stock: 0,
           created: 0,
+          reset: function () {
+            this.stock = 0;
+            this.created = 0;
+          },
         },
       }),
       {
@@ -39,8 +45,12 @@ readLines(`${__dirname}/input`)
           stock: 0,
           created: 0,
           make: function (amount) {
-            console.log(`   --> Made ${amount} ORE !`);
+            VERBOSE && console.log(`   --> Made ${amount} ORE !`);
             this.created += amount;
+          },
+          reset: function () {
+            this.stock = 0;
+            this.created = 0;
           },
         },
       }
@@ -54,18 +64,22 @@ readLines(`${__dirname}/input`)
 
       factories[item].make = function (amount, indent = 0) {
         if (this.stock >= amount) {
-          console.log(`${spaces(indent)}Using existing stock of ${item}`);
+          VERBOSE &&
+            console.log(`${spaces(indent)}Using existing stock of ${item}`);
           this.stock -= amount;
           return;
         }
 
         while (this.stock < amount) {
           this.components.forEach(({ quantity, item: type }) => {
-            console.log(
-              `${spaces(
-                indent
-              )}${item} needs ${quantity} of ${type} ... (stock: ${this.stock})`
-            );
+            VERBOSE &&
+              console.log(
+                `${spaces(
+                  indent
+                )}${item} needs ${quantity} of ${type} ... (stock: ${
+                  this.stock
+                })`
+              );
             factories[type].make(quantity, indent + 1);
           });
           this.stock += this.yield;
@@ -78,7 +92,34 @@ readLines(`${__dirname}/input`)
     return factories;
   })
   .then((factories) => {
-    factories.FUEL.make(1);
+    // Look for the upper bound; we'll do a binary search later
+    let lastSuccessPow = 6;
+    let firstFailurePow = 0;
+    while (true) {
+      const pow = lastSuccessPow + 1;
+      const amount = Math.pow(10, pow);
+      console.log(`amount: ${amount}`);
+      factories.FUEL.make(amount);
+      if (factories.ORE.created > 1000000000000) {
+        firstFailurePow = pow;
+        break;
+      }
+      lastSuccessPow = pow;
+      factories.ORE.reset();
+      factories.FUEL.reset();
+    }
+    console.log(`Upper bound: ${Math.pow(10, lastSuccessPow)}`);
+    console.log(`Lower bound: ${Math.pow(10, firstFailurePow)}`);
+    return factories;
+  })
+  .then((factories) => {
+    const max = 1000000000000;
+    while (factories.ORE.created < max * 0.1) {
+      factories.FUEL.make(1);
+    }
+    console.log(
+      `Created ${factories.FUEL.created} FUEL -- maybe multiply by ten?`
+    );
     return factories;
   })
   .then((factories) => {
