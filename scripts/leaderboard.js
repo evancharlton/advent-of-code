@@ -64,7 +64,13 @@ const getLeaderboard = async () => {
     http
       .get(
         url,
-        { headers: { cookie: `session=${process.env.AOC_COOKIE}` } },
+        {
+          headers: {
+            cookie: `session=${process.env.AOC_COOKIE}`,
+            "User-Agent":
+              "github.com/evancharlton/advent-of-code by evancharlton@gmail.com",
+          },
+        },
         (res) => {
           if (res.statusCode !== 200) {
             reject(new Error(`HTTP ${res.statusCode}`));

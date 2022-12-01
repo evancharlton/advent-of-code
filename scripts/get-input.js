@@ -8,7 +8,7 @@ if (process.env.AOC_COOKIE === undefined) {
 
 const now = new Date();
 
-const date = `0${(process.argv[2] ?? now.getDate())}`.substr(-2);
+const date = `0${process.argv[2] ?? now.getDate()}`.substr(-2);
 const month = now.getMonth();
 const year = process.argv[3] ?? String(now.getFullYear());
 
@@ -33,7 +33,13 @@ console.log(`Fetching ${url} into ${inputFile}`);
 
 http.get(
   url,
-  { headers: { cookie: `session=${process.env.AOC_COOKIE}` } },
+  {
+    headers: {
+      cookie: `session=${process.env.AOC_COOKIE}`,
+      "User-Agent":
+        "github.com/evancharlton/advent-of-code by evancharlton@gmail.com",
+    },
+  },
   (res) => res.pipe(out)
 );
 
