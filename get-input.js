@@ -8,9 +8,9 @@ if (process.env.AOC_COOKIE === undefined) {
 
 const now = new Date();
 
-const date = process.argv[2] || (() => `0${now.getDate()}`.substr(-2))();
+const date = `0${(process.argv[2] ?? now.getDate())}`.substr(-2);
 const month = now.getMonth();
-const year = process.argv[3] || (() => String(now.getFullYear()))();
+const year = process.argv[3] ?? String(now.getFullYear());
 
 const inputFile = path.join(year, "input", `day-${date}.txt`);
 const testFile = path.join(year, "input", `day-${date}.test.txt`);
