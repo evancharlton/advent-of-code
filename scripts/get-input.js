@@ -27,7 +27,9 @@ const url = `https://adventofcode.com/${year}/day/${date.replace(
   /^0/,
   ""
 )}/input`;
-const out = fs.createWriteStream(path.resolve(path.join(__dirname, inputFile)));
+const out = fs.createWriteStream(
+  path.resolve(path.join(__dirname, "..", inputFile))
+);
 
 console.log(`Fetching ${url} into ${inputFile}`);
 
