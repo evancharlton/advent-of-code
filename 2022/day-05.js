@@ -1,37 +1,42 @@
 const data = (type = "") => {
-  // It's too hard to parse the input.
-  const stacks = (() => {
-    if (type === "test") {
-      return [[], ["Z", "N"], ["M", "C", "D"], ["P"]];
+  const lines = require("./input")(__filename, "\n", type, false);
+
+  const stacks = [
+    [
+      /* placeholder */
+    ],
+  ];
+  const columnIdsIndex = lines.findIndex((line) => line.match(/^\s+\d+/));
+
+  const columnIds = lines[columnIdsIndex];
+  // Now scan through the column IDs, looking for non-spaces
+  for (let i = 0; i < columnIds.length; i += 1) {
+    const char = columnIds[i];
+    if (char !== " ") {
+      // We found a column ID, so add a new stack
+      const stack = [];
+      for (let n = columnIdsIndex - 1; n >= 0; n -= 1) {
+        const stackLine = lines[n];
+        stack.push(lines[n][i]);
+      }
+      stacks.push(stack.map((line) => line.trim()).filter(Boolean));
     }
-    return [
-      [],
-      "WBGZRDCV".split("").reverse(),
-      "VTSBCFWG".split("").reverse(),
-      "WNSBC".split("").reverse(),
-      "PCVJNMGQ".split("").reverse(),
-      "BHDFLST".split("").reverse(),
-      "NMWTVJ".split("").reverse(),
-      "GTSCLFP".split("").reverse(),
-      "ZDB".split("").reverse(),
-      "WZNM".split("").reverse(),
-    ];
-  })();
+  }
+
+  const input = [];
 
   const regex = /^move ([\d]+) from ([\d]+) to ([\d]+)$/;
+  for (let i = columnIdsIndex + 2; i < lines.length; i += 1) {
+    if (!lines[i].match(regex)) {
+      continue;
+    }
 
-  const input = require("./input")(__filename, "\n\n", type)[1]
-    .split("\n")
-    .filter((line) => line.match(regex))
-    .map((line) => {
-      const [, num, source, dest] = line.match(regex);
-      return { num, source, dest };
-    });
+    const [, num, source, dest] = lines[i].match(regex);
+    const obj = { num, source, dest };
+    input.push(obj);
+  }
 
-  return {
-    stacks,
-    input,
-  };
+  return { stacks, input };
 };
 
 const part1 = ({ input, stacks }) => {
