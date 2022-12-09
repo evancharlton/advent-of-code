@@ -14,43 +14,9 @@ const DELTAS = {
   D: [0, -1],
 };
 
-const print = (knots) => {
-  if (!process.env.VERBOSE) {
-    return;
-  }
-
-  const grid = [];
-
-  for (let row = 0; row < 10; row += 1) {
-    grid.push([]);
-    for (let col = 0; col < 10; col += 1) {
-      grid[row].push(".");
-    }
-  }
-
-  knots.forEach(([x, y], i) => {
-    grid[grid.length - 1 - y][x] = i === 0 ? "H" : i;
-  });
-
-  console.debug(grid.map((row) => row.join(" ")).join("\n"));
-};
-
-const nextTo = (head, tail) => {
-  if (head[0] === tail[0] || head[1] === tail[1]) {
-    return true;
-  }
-
-  if (Math.abs(head[0] - tail[0]) <= 1 && Math.abs(head[1] - tail[1]) <= 1) {
-    return true;
-  }
-
-  return false;
-};
-
 const takeStep = (direction, num, record, ...startKnots) => {
   const knots = startKnots.map((t) => [...t]);
 
-  print(knots);
   for (let i = 0; i < num; i++) {
     if (!DELTAS[direction]) {
       throw new Error("Unexpected direction: " + direction);
@@ -63,7 +29,6 @@ const takeStep = (direction, num, record, ...startKnots) => {
 
     // Then move the tail(s) accordingly.
     tailLoop: for (let t = 1; t < knots.length; t += 1) {
-      print(knots);
       const H = knots[t - 1];
       const T = knots[t];
 
@@ -105,8 +70,6 @@ const takeStep = (direction, num, record, ...startKnots) => {
     const tail = knots[knots.length - 1];
     record.add(tail.join(","));
   }
-
-  print(knots);
 
   return knots;
 };
