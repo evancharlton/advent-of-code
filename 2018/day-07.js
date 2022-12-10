@@ -6,25 +6,6 @@ const data = (type = "") => {
   );
 };
 
-const walk = (map, line) => {
-  const indent = line
-    .split("")
-    .map(() => " ")
-    .join(" ");
-  console.log(`${indent} -> walk(map, ${line})`);
-  const last = line[line.length - 1];
-
-  const steps = map.get(last);
-  if (!steps) {
-    console.log(indent, `${line} <--`);
-    return line;
-  }
-
-  return steps.sort().reduce((acc, next) => {
-    return walk(map, `${acc}${next}`);
-  }, line);
-};
-
 const startTask = (steps) => {
   const reqs = steps.reduce((acc, [req]) => ({ ...acc, [req]: true }), {});
 
@@ -45,70 +26,57 @@ const startTask = (steps) => {
 };
 
 const part1 = (steps) => {
-  const tasks = {};
-  steps.forEach(([req, task]) => {
-    tasks[req] = tasks[req] || [];
-    tasks[task] = tasks[task] || [];
-    tasks[task].push(req);
-    tasks[task].sort();
-  });
-
-  const lines = Object.entries(tasks).map(([task, reqs]) => {
-    return `${task}: ${reqs.join(" ")}\n\techo ${task}`;
-  });
-
-  const allTasks = new Set(Object.values(tasks).flat());
-  const missing = Object.keys(tasks).find((task) => !allTasks.has(task));
-
-  lines.push(`answer: ${missing}\n`);
-
-  return lines.join("\n\n");
-
-  const start = Object.entries(tasks).find(([task, reqs]) => !reqs.length)[0];
-
-  return tasks;
-};
-
-const part1b = (steps) => {
   const reqs = {};
   const dependents = {};
   steps.forEach(([req, after]) => {
-    reqs[req] = reqs[req] || [];
-    reqs[req].push(after);
-    reqs[req].sort();
+    // reqs[req] = reqs[req] || [];
+    // reqs[req].push(after);
+    // reqs[req].sort();
+    reqs[req] = reqs[req] || {};
+    reqs[req][after] = null;
 
     dependents[after] = dependents[after] || [];
     dependents[after].push(req);
     dependents[after].sort();
   });
 
-  const finishedTasks = {};
-  const tasks = [startTask(steps)];
-  while (tasks.length) {
-    const task = tasks.shift();
-  }
-
-  return execute(tree, "");
-};
-
-const part1a = (input) => {
-  let root = undefined;
-  const map = new Map();
-  const children = new Set();
-  input.forEach(([before, after]) => {
-    let node = map.get(before);
-    if (!node) {
-      node = [];
+  const expand = (taskId) => {
+    if (!reqs[taskId]) {
+      return {};
     }
-    node.push(after);
-    map.set(before, node);
-    children.add(after);
-  });
 
-  const [start] = [...map.keys()].filter((key) => !children.has(key));
+    return Object.keys(reqs[taskId]).reduce(
+      (acc, id) => ({
+        ...acc,
+        [id]: expand(id),
+      }),
+      {}
+    );
+  };
 
-  return walk(map, start);
-  return map;
+  const startTaskId = "A"; // startTask(steps);
+  const taskTree = { [startTaskId]: expand(startTaskId) };
+
+  let last = "";
+  const flatten = (node) => {
+    const keys = Object.keys(node);
+    if (keys.length === 0) {
+      throw new Error("wat");
+    }
+
+    keys.sort();
+    return keys.reduce((acc, key) => {
+      const next = node[key];
+      if (Object.keys(next).length === 0) {
+        // Terminal node
+        last = key;
+        return acc;
+      }
+      return `${acc}${key}${flatten(node[key])}`;
+    }, "");
+  };
+
+  return flatten(taskTree) + last;
 };
 
 const part2 = (input) => {
@@ -117,10 +85,7 @@ const part2 = (input) => {
 
 /* istanbul ignore next */
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
-  const output = part1(data(process.argv[2] || ""));
-  const { writeFileSync } = require("fs");
-  writeFileSync("Makefile", output);
-  console.log(`Part 1:`, output);
+  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
   console.log(`Part 2:`, part2(data(process.argv[2] || "")));
 }
 
