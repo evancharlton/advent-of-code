@@ -1,3 +1,6 @@
 output
 node_modules/
 coverage
+
+# It's useful to have working files.
+*/scratch
