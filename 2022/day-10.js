@@ -53,11 +53,6 @@ const part2 = (lines) => {
 
   for (let i = 0; i < xLog.length; i += 1) {
     const spriteMiddleX = xLog[i];
-    const dRow = new Array(40).fill(".");
-    dRow[spriteMiddleX - 1] = "#";
-    dRow[spriteMiddleX] = "#";
-    dRow[spriteMiddleX + 1] = "#";
-
     const beamX = i % 40;
     const row = Math.floor(i / 40);
 
@@ -69,13 +64,6 @@ const part2 = (lines) => {
     if (lit) {
       screen[row][beamX] = "#";
     }
-
-    // console.debug(
-    //   [
-    //     "Sprite position: " + dRow.join(""),
-    //     "Current CRT row: " + screen[row].join(""),
-    //   ].join("\n")
-    // );
   }
 
   const print = screen.map((row) => row.join(" ")).join("\n");
