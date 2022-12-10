@@ -2,7 +2,7 @@ const { part1, part2, data } = require("./day-07");
 
 describe("Day 07", () => {
   describe("Part 1", () => {
-    it.skip("works", () => {
+    it("works", () => {
       expect(part1(data("test"))).toBe("CABDFE");
       expect(part1(data())).toBe("");
     });
