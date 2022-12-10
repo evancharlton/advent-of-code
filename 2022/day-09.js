@@ -1,10 +1,7 @@
 const data = (type = "") => {
-  return require("./input")(__filename, "\n", type)
-    .filter((line) => Boolean(line))
-    .map((line) => {
-      const [dir, steps] = line.split(" ");
-      return [dir, +steps];
-    });
+  return require("./input")(__filename, "\n", type).filter((line) =>
+    Boolean(line)
+  );
 };
 
 const DELTAS = {
@@ -14,65 +11,69 @@ const DELTAS = {
   D: [0, -1],
 };
 
-const takeStep = (direction, num, record, ...startKnots) => {
-  const knots = startKnots.map((t) => [...t]);
+const makeStepper =
+  (record) =>
+  (instruction, ...startKnots) => {
+    const [direction, num] = instruction.split(" ");
 
-  for (let i = 0; i < num; i++) {
-    if (!DELTAS[direction]) {
-      throw new Error("Unexpected direction: " + direction);
-    }
+    const knots = startKnots.map((t) => [...t]);
 
-    // Move the head
-    const [dx, dy] = DELTAS[direction];
-    knots[0][0] += dx;
-    knots[0][1] += dy;
+    for (let i = 0; i < +num; i++) {
+      if (!DELTAS[direction]) {
+        throw new Error("Unexpected direction: " + direction);
+      }
 
-    // Then move the tail(s) accordingly.
-    tailLoop: for (let t = 1; t < knots.length; t += 1) {
-      const H = knots[t - 1];
-      const T = knots[t];
+      // Move the head
+      const [dx, dy] = DELTAS[direction];
+      knots[0][0] += dx;
+      knots[0][1] += dy;
 
-      const diffX = Math.abs(T[0] - H[0]);
-      const diffY = Math.abs(T[1] - H[1]);
+      // Then move the tail(s) accordingly.
+      tailLoop: for (let t = 1; t < knots.length; t += 1) {
+        const H = knots[t - 1];
+        const T = knots[t];
 
-      if (T[0] === H[0] && T[1] === H[1]) {
-        // They're overlapping
-        break tailLoop;
-      } else if (T[0] === H[0]) {
-        // They're on the same column
-        const diff = Math.abs(H[1] - T[1]);
-        if (diff < 2) {
+        if (T[0] === H[0] && T[1] === H[1]) {
+          // They're overlapping
           break tailLoop;
-        }
-        T[1] += H[1] > T[1] ? 1 : -1;
-      } else if (T[1] === H[1]) {
-        // They're on the same row
-        const diff = Math.abs(H[0] - T[0]);
-        if (diff < 2) {
-          break tailLoop;
-        }
-        T[0] += H[0] > T[0] ? 1 : -1;
-      } else {
-        // We need to make a diagonal step to get the tail back on the same
-        // row/column as the head.
-        if (diffX === diffY && diffX === 1) {
-          break tailLoop;
-        } else if (diffX < diffY) {
-          T[0] += H[0] > T[0] ? 1 : -1;
+        } else if (T[0] === H[0]) {
+          // They're on the same column
+          const diff = Math.abs(H[1] - T[1]);
+          if (diff === 1) {
+            break tailLoop;
+          }
           T[1] += H[1] > T[1] ? 1 : -1;
+        } else if (T[1] === H[1]) {
+          // They're on the same row
+          const diff = Math.abs(H[0] - T[0]);
+          if (diff === 1) {
+            break tailLoop;
+          }
+          T[0] += H[0] > T[0] ? 1 : -1;
         } else {
-          T[0] += H[0] > T[0] ? 1 : -1;
-          T[1] += H[1] > T[1] ? 1 : -1;
+          // We need to make a diagonal step to get the tail back on the same
+          // row/column as the head.
+          const diffX = Math.abs(T[0] - H[0]);
+          const diffY = Math.abs(T[1] - H[1]);
+
+          if (diffX === diffY && diffX === 1) {
+            break tailLoop;
+          } else if (diffX < diffY) {
+            T[0] += H[0] > T[0] ? 1 : -1;
+            T[1] += H[1] > T[1] ? 1 : -1;
+          } else {
+            T[0] += H[0] > T[0] ? 1 : -1;
+            T[1] += H[1] > T[1] ? 1 : -1;
+          }
         }
       }
+
+      const tail = knots[knots.length - 1];
+      record.add(tail.join(","));
     }
 
-    const tail = knots[knots.length - 1];
-    record.add(tail.join(","));
-  }
-
-  return knots;
-};
+    return knots;
+  };
 
 const part1 = (steps) => {
   const H = [0, 0];
@@ -81,8 +82,10 @@ const part1 = (steps) => {
   const positions = new Set();
   positions.add(T.join(","));
 
-  steps.forEach(([direction, num]) => {
-    const [newH, newT] = takeStep(direction, num, positions, H, T);
+  const takeStep = makeStepper(positions);
+
+  steps.forEach((instruction) => {
+    const [newH, newT] = takeStep(instruction, H, T);
 
     H[0] = newH[0];
     H[1] = newH[1];
@@ -102,11 +105,12 @@ const part2 = (steps) => {
   const positions = new Set();
   positions.add("0,0");
 
-  steps.forEach(([direction, num]) => {
-    const newKnots = takeStep(direction, num, positions, ...knots);
+  const takeStep = makeStepper(positions);
+
+  steps.forEach((instruction) => {
+    const newKnots = takeStep(instruction, ...knots);
     newKnots.forEach((newKnot, i) => {
-      knots[i][0] = newKnot[0];
-      knots[i][1] = newKnot[1];
+      knots[i] = newKnot;
     });
   });
 
@@ -122,5 +126,5 @@ module.exports = {
   data,
   part1,
   part2,
-  takeStep,
+  makeStepper,
 };

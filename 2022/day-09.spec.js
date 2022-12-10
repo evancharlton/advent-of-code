@@ -1,6 +1,6 @@
 const { basename } = require("path");
 const DAY = basename(__filename).replace(".spec.js", "");
-const { part1, part2, data, takeStep } = require(`./${DAY}`);
+const { part1, part2, data, makeStepper } = require(`./${DAY}`);
 
 describe(DAY.replace("-", " "), () => {
   test("Part 1", () => {
@@ -28,30 +28,23 @@ describe(DAY.replace("-", " "), () => {
     expect(part2(data())).toEqual(VALUE);
   });
 
-  describe("takeStep", () => {
+  describe("makeStepper", () => {
+    const takeStep = makeStepper(new Set());
+
     test("R example", () => {
-      const [H, T] = takeStep("R", 1, new Set(), [2, 2], [1, 1]);
+      const [H, T] = takeStep("R 1", [2, 2], [1, 1]);
       expect(H).toEqual([3, 2]);
       expect(T).toEqual([2, 2]);
     });
 
     test("U example", () => {
-      const [H, T] = takeStep("U", 1, new Set(), [2, 2], [1, 1]);
+      const [H, T] = takeStep("U 1", [2, 2], [1, 1]);
       expect(H).toEqual([2, 3]);
       expect(T).toEqual([2, 2]);
     });
 
     test("R 4", () => {
-      const newKnots = takeStep(
-        "R",
-        4,
-        new Set(),
-        [0, 0],
-        [0, 0],
-        [0, 0],
-        [0, 0],
-        [0, 0]
-      );
+      const newKnots = takeStep("R 4", [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]);
       expect(newKnots).toEqual([
         [4, 0],
         [3, 0],
@@ -63,9 +56,7 @@ describe(DAY.replace("-", " "), () => {
 
     test("U 8", () => {
       const newKnots = takeStep(
-        "U",
-        8,
-        new Set(),
+        "U 8",
         [5, 0],
         [4, 0],
         [3, 0],
