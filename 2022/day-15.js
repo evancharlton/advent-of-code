@@ -16,33 +16,6 @@ const data = (type = "") => {
     ]);
 };
 
-const part1 = (sensorData, row) => {
-  let count = 0;
-
-  const [startX, endX] = sensorData.reduce(
-    ([minX, maxX], [[sx], _, dist]) => {
-      return [Math.min(minX, sx - dist), Math.max(maxX, sx + dist)];
-    },
-    [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]
-  );
-
-  for (x = startX; x <= endX; x++) {
-    const coord = [x, row];
-    const closeSensors = sensorData.filter(([sensor, beacon, safeRadius]) => {
-      if (coord[0] === beacon[0] && coord[1] === beacon[1]) {
-        return false;
-      }
-
-      const dist = manhattan(sensor, coord);
-      return dist <= safeRadius;
-    });
-
-    count += closeSensors.length > 0 ? 1 : 0;
-  }
-
-  return count;
-};
-
 const getRowCoverage = (sensorData, row) => {
   // For a given row, find out how much each sensor overlaps that row.
   const overlaps = [];
@@ -76,7 +49,11 @@ const getRowCoverage = (sensorData, row) => {
     }
     working[1] = Math.max(x1, working[1]);
   }
-  return false;
+  return working[1] - working[0];
+};
+
+const part1 = (sensorData, row) => {
+  return getRowCoverage(sensorData, row);
 };
 
 const part2 = (sensorData, n) => {
@@ -86,7 +63,7 @@ const part2 = (sensorData, n) => {
 
   for (let i = 0; i < n; i += 1) {
     const found = getRowCoverage(sensorData, i);
-    if (found) {
+    if (Array.isArray(found)) {
       return found[0] * 4000000 + found[1];
     }
   }
