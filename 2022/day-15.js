@@ -82,7 +82,57 @@ const part1bad = (sensorData, row) => {
   return noBeacons;
 };
 
+const getRowCoverage = (sensorData, row) => {
+  // For a given row, find out how much each sensor overlaps that row.
+  const overlaps = [];
+  sensorData.forEach(([[sx, sy], _, radius]) => {
+    const distanceToRow = Math.abs(sy - row);
+    if (distanceToRow > radius) {
+      return;
+    }
+
+    const armLength = radius - distanceToRow;
+    const start = sx - armLength;
+    const end = sx + armLength;
+    if (end < start) {
+      throw new Error(`Failed at ${sx},${sy} @ ${row}`);
+    }
+    overlaps.push([start, end]);
+  });
+
+  const sorted = overlaps.sort(([a0, a1], [b0, b1]) => {
+    if (a0 !== b0) {
+      return a0 - b0;
+    }
+    return a1 - a0 - (b1 - b0);
+  });
+
+  const [working] = sorted;
+  for (let i = 0; i < sorted.length; i += 1) {
+    const [x0, x1] = sorted[i];
+    if (x0 > working[1]) {
+      return [x0 - 1, row];
+    }
+    working[1] = Math.max(x1, working[1]);
+  }
+  return false;
+};
+
 const part2 = (sensorData, n) => {
+  if (!n) {
+    throw new Error(`Missing n`);
+  }
+
+  for (let i = 0; i < n; i += 1) {
+    const found = getRowCoverage(sensorData, i);
+    if (found) {
+      return found[0] * 4000000 + found[1];
+    }
+  }
+  throw new Error("Nope");
+};
+
+const part2bad = (sensorData, n) => {
   if (!n) {
     throw new Error(`Missing n`);
   }
