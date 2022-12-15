@@ -43,45 +43,6 @@ const part1 = (sensorData, row) => {
   return count;
 };
 
-const part1bad = (sensorData, row) => {
-  const map = new Map();
-  const xRange = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
-
-  sensorData.forEach(([sensor, beacon]) => {
-    const [sx, sy] = sensor;
-    const [bx, by] = beacon;
-    const dist = manhattan(sensor, beacon);
-    console.log(`TCL ~ file: day-15.js:26 ~ sensorData.forEach ~ dist`, dist);
-
-    map.set(`${bx},${by}`, "B");
-    map.set(`${sx},${sy}`, "S");
-
-    for (let x = sx - (dist + 1); x <= sx + dist; x++) {
-      for (let y = sy - dist; y <= sy + dist; y++) {
-        const key = `${x},${y}`;
-
-        if (map.has(key)) continue;
-        if (manhattan([x, y], sensor) > dist) continue;
-
-        map.set(key, "#");
-
-        xRange[0] = Math.min(xRange[0], x);
-        xRange[1] = Math.max(xRange[1], x);
-      }
-    }
-  });
-
-  let noBeacons = 0;
-  const out = [];
-  for (let x = xRange[0]; x <= xRange[1]; x++) {
-    const value = map.get(`${x},${row}`);
-    out.push(map.get(`${x},${row}`) ?? ".");
-    if (value === "#") noBeacons++;
-  }
-
-  return noBeacons;
-};
-
 const getRowCoverage = (sensorData, row) => {
   // For a given row, find out how much each sensor overlaps that row.
   const overlaps = [];
@@ -130,27 +91,6 @@ const part2 = (sensorData, n) => {
     }
   }
   throw new Error("Nope");
-};
-
-const part2bad = (sensorData, n) => {
-  if (!n) {
-    throw new Error(`Missing n`);
-  }
-
-  for (let y = 0; y <= n; y++) {
-    const { gaps } = analyzeRow(sensorData, y, [0, n], true);
-    if (gaps.length === 0) {
-      continue;
-    }
-
-    if (gaps.length !== 1) {
-      throw new Error("Too many gaps");
-    }
-
-    return gaps[0] * 4000000 + y;
-  }
-
-  throw new Error("Nada");
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
