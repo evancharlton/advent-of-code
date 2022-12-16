@@ -5,7 +5,7 @@ const { part1, part2, data } = require(`./${DAY}`);
 describe(DAY.replace("-", " "), () => {
   test("Part 1", () => {
     const TEST_VALUE = 1651;
-    const VALUE = undefined;
+    const VALUE = 2077;
 
     // test for test data
     expect(part1(data("test"))).toEqual(TEST_VALUE);
