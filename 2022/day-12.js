@@ -57,7 +57,7 @@ const part1 = ({ start, end, grid }) => {
           });
         return out;
       },
-      weight: (key) => weights.get(key),
+      cost: (key) => weights.get(key),
       start: start.join(","),
       goal: (key) => weights.has(key) && weights.get(key) > "z".charCodeAt(0),
       h,
@@ -102,7 +102,7 @@ const part2 = ({ start: end, end: start, grid }) => {
             return weights.get(key) - weights.get(xy) <= 1;
           });
       },
-      weight: (key) => weights.get(key),
+      cost: (key) => weights.get(key),
       start: start.join(","),
       goal: (key) => weights.get(key) === "a".charCodeAt(0),
       h,

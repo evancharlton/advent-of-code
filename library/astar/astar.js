@@ -1,7 +1,7 @@
 const pq = require("./pq");
 const getPath = require("./getPath");
 
-const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
+const astar = ({ neighbors: getNeighbors, cost, start, goal, h }) => {
   const queue = pq(start);
   const cameFrom = new Map();
 
@@ -15,14 +15,14 @@ const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
 
   while (queue.length() > 0) {
     const current = queue.take();
-    if (goal(current)) {
+    if (goal(current, () => getPath(cameFrom, current))) {
       return getPath(cameFrom, current);
     }
 
     const neighbors = getNeighbors(current);
     for (let i = 0; i < neighbors.length; i += 1) {
       const neighbor = neighbors[i];
-      const tentativeScore = g(current) + weight(neighbor);
+      const tentativeScore = g(current) + cost(neighbor);
       if (tentativeScore < g(neighbor)) {
         cameFrom.set(neighbor, current);
         gScore.set(neighbor, tentativeScore);
@@ -32,6 +32,7 @@ const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
     }
   }
 
+  console.debug(cameFrom);
   throw new Error(`No path found: astar(${start}, ${goal})`);
 };
 
