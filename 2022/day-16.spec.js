@@ -15,7 +15,7 @@ describe(DAY.replace("-", " "), () => {
   });
 
   test("Part 2", () => {
-    const TEST_VALUE = undefined;
+    const TEST_VALUE = 1707;
     const VALUE = undefined;
 
     // test for test data

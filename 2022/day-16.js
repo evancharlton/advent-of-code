@@ -58,7 +58,12 @@ const createMap = (valves) => {
   return lookup;
 };
 
-const part1 = (valves, limit = 30) => {
+const part1 = (valves, limit) => {
+  return valves;
+  for (let minute = 0; minute <= limit; minute += 1) {}
+};
+
+const part1blah = (valves, limit = 30) => {
   const VERBOSE = false;
 
   const lookup = createMap(valves);
@@ -85,7 +90,7 @@ const part1 = (valves, limit = 30) => {
     //   throw new Error("Overflow");
     // }
 
-    ++i % 100_000 === 0 && console.debug(`Step # ${i} ... \t ${elapsedTime}`);
+    ++i % 1_000_000 === 0 && console.debug(`Step # ${i} ... \t ${elapsedTime}`);
 
     VERBOSE &&
       console.debug(
@@ -163,20 +168,41 @@ const part1 = (valves, limit = 30) => {
   }
 };
 
-const part1old = (valves, limit = 30) => {
-  const VERBOSE = limit < 20;
+Array.prototype.power = function () {
+  const powerset = [];
+  for (let n = 0; n < Math.pow(this.length, 2); n += 1) {
+    powerset.push(
+      this.filter((item, i) => {
+        return (n >> i) & 1;
+      })
+    );
+  }
+  return powerset;
+};
 
-  const lookup = new Map();
-  valves.forEach((valve) => {
-    lookup.set(valve.id, valve);
+Array.prototype.combinations = function () {
+  const out = this.flatMap((v, i, a) => {
+    return a.slice(i + 1).map((w) => [v, w]);
   });
 
-  const numValves = valves.filter(({ delta }) => delta > 0).length;
-
-  lookup.forEach((valve, valveId) => {
-    valve.next = valve.next.map((id) => lookup.get(id));
-    lookup.set(valveId, valve);
+  // Don't forget the duplicates, in case the elephant and I go the same way for
+  // one turn.
+  this.forEach((item) => {
+    out.push([item, item]);
   });
+
+  return out;
+};
+
+const part2 = (valves) => {
+  return undefined;
+};
+
+const part2blah = (valves, limit = 26) => {
+  const VERBOSE = false;
+
+  const lookup = createMap(valves);
+  let i = 0;
 
   const sum = (openedValves) => {
     return Object.keys(openedValves)
@@ -188,84 +214,128 @@ const part1old = (valves, limit = 30) => {
     return Object.entries(openedValves)
       .map(([valveId, minuteOpened]) => ({
         delta: lookup.get(valveId).delta,
-        minutesOpen: currentMinute - minuteOpened,
+        minutesOpen: currentMinute - 1 - minuteOpened,
       }))
       .map(({ delta, minutesOpen }) => delta * minutesOpen)
       .reduce((acc, v) => acc + v, 0);
   };
 
-  let totalSteps = 0;
+  const step = (
+    [currentValveId, previousValveId],
+    elapsedTime,
+    openValveIds
+  ) => {
+    // if (++i > 1_000_000) {
+    //   throw new Error("Overflow");
+    // }
 
-  const step = (currentNode, previousNodeId, stepsTaken, openedValves) => {
-    ++totalSteps % 100000 === 0 && console.debug(`Step # ${totalSteps} ...`);
+    ++i % 1_000_000 === 0 && console.debug(`Step # ${i} ... \t ${elapsedTime}`);
 
     VERBOSE &&
       console.debug(
-        indent(stepsTaken),
-        `Minute ${stepsTaken}: --> ${
-          currentNode.id
-        } with open valves: ${Object.entries(openedValves)
+        indent(elapsedTime),
+        `Minute ${elapsedTime}: --> ${currentValveId} with open valves: ${Object.entries(
+          openValveIds
+        )
           .map(([key, value]) => `${key}=${value}`)
           .sort()
           .join(", ")}`,
-        `(= ${sum(openedValves)})`
+        `(= ${sum(openValveIds)})`
       );
 
-    if (Object.keys(openedValves).length === numValves) {
-      const tot = integrate(openedValves, limit);
-      VERBOSE &&
-        console.debug(
-          indent(stepsTaken + 1),
-          `Opened all the valves => ${tot}`
-        );
-      return tot;
+    if (elapsedTime >= limit) {
+      return integrate(openValveIds, limit);
     }
 
-    if (stepsTaken >= limit) {
-      const tot = integrate(openedValves, stepsTaken);
-      VERBOSE &&
-        console.debug(
-          indent(stepsTaken + 1),
-          `=> ${tot} (${Object.keys(openedValves).length})`
-        );
-      return tot;
+    const currentValve = lookup.get(currentValveId);
+    if (!currentValve) {
+      throw new Error(`Missing ${currentValveId}`);
     }
 
-    const options = currentNode.next
-      .filter((node) => node.id !== previousNodeId)
-      .filter((node) => !openedValves[node.id]);
+    const canOpenValve =
+      !openValveIds[currentValveId] && currentValve.delta > 0;
+    const options = Object.entries(currentValve.next)
+      .filter(([newValveId], _, ids) => {
+        if (ids.length === 1) {
+          return true;
+        }
 
-    const newOpenedValves = { ...openedValves };
+        // Don't backtrack if we can avoid it.
+        if (newValveId === previousValveId) {
+          return false;
+        }
 
-    if (currentNode.isValve) {
-      VERBOSE &&
-        console.debug(
-          indent(stepsTaken),
-          `Open valve, releasing ${currentNode.delta} pressure`
-        );
-      newOpenedValves[currentNode.id] = stepsTaken;
-    }
+        return true;
+      })
+      .combinations()
+      .map(
+        ([
+          [myNewValveId, myDistance],
+          [elephantNewValveId, elephantDistance],
+        ]) => {
+          const paths = [
+            // I take a step
+            step(
+              [myNewValveId, currentValveId],
+              elapsedTime + myDistance,
+              openValveIds
+            ),
+            // Elephant takes a step
+            step([elephantNewValveId, ele]),
+          ];
 
-    return options
-      .map((nextNode) =>
-        step(nextNode, currentNode.id, stepsTaken + 1, newOpenedValves)
+          if (canOpenValve) {
+            VERBOSE &&
+              console.debug(
+                indent(elapsedTime + 1),
+                `Minute ${elapsedTime + 1}: Opened valve ${currentValveId}`,
+                `(=${sum(openValveIds)})`
+              );
+            paths.push(
+              step(
+                [newValveId, currentValveId],
+                elapsedTime + distance + 1 /* time spent opening the valve */,
+                {
+                  ...openValveIds,
+                  [currentValveId]: elapsedTime,
+                }
+              )
+            );
+          }
+          // Also test not opening the valve
+          paths.push(
+            step(
+              [newValveId, currentValveId],
+              elapsedTime + distance,
+              openValveIds
+            )
+          );
+
+          return paths;
+        }
       )
-      .reduce((acc, sum) => Math.max(acc, sum), 0);
+      .flat();
+    return Math.max(...options);
   };
 
-  return step(lookup.get("AA"), "", 0, {});
-};
-
-const part2 = (lines) => {
-  return undefined;
+  try {
+    return step(["AA", ""], 0, {});
+  } finally {
+    console.log(`Used ${i} steps`);
+  }
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
-  console.log(
-    `Part 1:`,
-    part1(data(process.argv[2] || ""), +(process.argv[3] ?? 30))
-  );
-  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
+  let [_, __, file, limit] = process.argv;
+  if (!limit) {
+    if (!Number.isNaN(+file)) {
+      limit = +file;
+      file = "";
+    }
+  }
+
+  console.log(`Part 1:`, part1(data(file), limit));
+  console.log(`Part 2:`, part2(data(file), limit));
 }
 
 module.exports = {
