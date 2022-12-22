@@ -14,13 +14,33 @@ const ROCKS = [
   // line
   [0b0011110],
   // plus
-  [0b0001000, 0b0011100, 0b0001000],
-  // L
-  [0b0000100, 0b0000100, 0b0011100],
+  // prettier-ignore
+  [
+    0b0001000,
+    0b0011100,
+    0b0001000
+  ],
+  // L (well, J I guess)
+  // prettier-ignore
+  [
+    0b0000100,
+    0b0000100,
+    0b0011100
+  ],
   // column
-  [0b0010000, 0b0010000, 0b0010000, 0b0010000],
+  // prettier-ignore
+  [
+    0b0010000,
+    0b0010000,
+    0b0010000,
+    0b0010000
+  ],
   // square
-  [0b0011000, 0b0011000],
+  // prettier-ignore
+  [
+    0b0011000,
+    0b0011000
+  ],
 ];
 
 const print = (board, indent = 0) => {
@@ -152,8 +172,11 @@ const merge = (board, piece, offsetY) => {
 };
 
 const simulator =
-  (jets, prune = Number.MAX_SAFE_INTEGER) =>
-  (count = 2022, initialBoard = []) => {
+  ({ jets, prune = Number.MAX_SAFE_INTEGER }) =>
+  ({ rocksCount, initialBoard = [], stop = () => false }) => {
+    if (!rocksCount) {
+      throw new Error("Missing rocksCount");
+    }
     let insIndex = 0;
     const ins = () => {
       return jets[insIndex++ % jets.length];
@@ -174,20 +197,7 @@ const simulator =
 
     let height = 0;
     let board = [...initialBoard];
-    for (let i = 0; i < count; i += 1) {
-      if (false) {
-        const key = `${rockIndex % ROCKS.length} / ${
-          insIndex % jets.length
-        } / ${board.slice(0, 10).map(bin).join(",")}`;
-        if (cache.has(key)) {
-          console.debug(cache);
-          console.debug(key);
-          throw new Error(
-            `yay @ ${i} prev: ${cache.get(key)}\t${i - cache.get(key)}`
-          );
-        }
-        cache.set(key, i);
-      }
+    for (let i = 0; i < rocksCount; i += 1) {
       // i % (jets.length * ROCKS.length) === 0 &&
       //   console.debug(
       //     [
@@ -215,6 +225,12 @@ const simulator =
         const before = board.length;
         board = board.slice(0, prune);
         height += before - prune;
+      } else {
+        height = board.length;
+      }
+
+      if (stop(board, height)) {
+        break;
       }
     }
     VERBOSE && debug(print(board));
@@ -223,25 +239,119 @@ const simulator =
   };
 
 const part1 = (jets, count = 2022) => {
-  const sim = simulator(jets);
-  return sim(count).height;
+  const sim = simulator({ jets });
+  const { board, height } = sim({ rocksCount: count });
+  console.log(print(board));
+  return height;
 };
 
-const part2 = (jets, count = 2022) => {
-  const sim = simulator(jets);
+const part2 = (jets, count = 1_000_000_000_000) => {
+  const sim = simulator({ jets });
 
-  const { board } = sim(count);
+  let rocksPerCycle = 0;
+  let repeatedRows = 0;
+  let cycle = [];
+  let startSegment = [];
 
-  // const start = sim(24);
-  // const loop = sim(53, start.board);
-  // const times = Math.floor(count / 53);
-  // const leftovers = sim(count - (53 * Math.floor(count / 53) + 24), loop.board);
-  // return [times, start.height, loop.height, leftovers.height];
+  const findLoops = (board) => {
+    if (board.length < 20) {
+      return false;
+    }
+
+    if (cycle.length > 0) {
+      // We found a cycle; let's start counting rocks
+      rocksPerCycle++;
+      return repeatedRows++ === cycle.length;
+    } else {
+      // Look through the board and see if we can find a pattern that repeats.
+      const boardHeight = board.length;
+      const halfHeight = Math.floor(boardHeight / 2);
+      rangeLoop: for (
+        let rangeHeight = 20;
+        rangeHeight < halfHeight;
+        rangeHeight += 1
+      ) {
+        const startRange = board.slice(0, rangeHeight);
+        const candidateRange = board.slice(rangeHeight, rangeHeight * 2);
+
+        checkLoop: for (let y = 0; y < startRange.length; y += 1) {
+          if (startRange[y] !== candidateRange[y]) {
+            continue rangeLoop;
+          }
+        }
+
+        // console.log(`Found a repeating slice of ${startRange.length} rows`);
+        // console.log(print(startRange));
+        // console.log("----");
+        // console.log(print(board));
+        offset = board.length - rangeHeight * 2;
+        cycle = startRange;
+        startSegment = board.slice(rangeHeight * 2);
+        break;
+      }
+
+      return false;
+    }
+  };
+
+  const { board } = sim({ rocksCount: count, stop: findLoops });
+
+  console.log("Start:");
+  console.log(print(startSegment));
+  console.log("Cycle:");
+  console.log(print(cycle));
+  console.log("Board:");
+  console.log(print(board));
+
+  let startRocks = 0;
+  sim({
+    rocksCount: count,
+    stop: (board) => {
+      startRocks++;
+      return board.length === startSegment.length;
+    },
+  });
+
+  let runningRockTotal = count;
+  let runningHeightTotal = 0;
+
+  // Start with the start segment
+  runningHeightTotal += startSegment.length;
+  runningRockTotal -= startRocks;
+
+  // Account for the repeated segments
+  const numCycles = Math.floor(runningRockTotal / rocksPerCycle);
+  runningHeightTotal += (1 + numCycles) * cycle.length;
+  runningRockTotal -= numCycles * rocksPerCycle;
+
+  // Account for the final rocks that didn't get to finish a cycle by running
+  // a simulation of the end game
+  const { board: end, height: leftoverHeight } = sim({
+    rocksCount: runningRockTotal,
+    initialBoard: cycle,
+  });
+
+  runningHeightTotal += leftoverHeight;
+
+  console.log({
+    cycleLength: cycle.length,
+    rocksPerCycle,
+    startSegmentLength: startSegment.length,
+    startRocks,
+    numCycles,
+    runningHeightTotal,
+    runningRockTotal,
+    countedRocks: startRocks + numCycles * rocksPerCycle + runningRockTotal,
+    leftoverHeight,
+    delta: 1514285714288 - runningHeightTotal,
+  });
+  return runningHeightTotal;
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
-  console.log(`Part 1:`, part1(data(process.argv[2] || "")));
-  // console.log(`Part 2:`, part2(data(process.argv[2] || "")));
+  console.log(`Part 1:`, part1(data(process.argv[2] || ""), 1500));
+  console.log(`Part 1.5:`, part2(data(process.argv[2] || ""), 1500));
+  console.log(`Part 2:`, part2(data(process.argv[2] || "")));
 }
 
 module.exports = {
