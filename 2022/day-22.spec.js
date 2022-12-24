@@ -16,12 +16,16 @@ describe(DAY.replace("-", " "), () => {
 
   test("Part 2", () => {
     const TEST_VALUE = 5031;
-    const VALUE = undefined;
+    const VALUE = 184106;
 
     // test for test data
     expect(part2(data("test"))).toEqual(TEST_VALUE);
 
     // test for real data
-    expect(part2(data())).toEqual(VALUE);
+    const res = part2(data());
+    expect(res).toBeGreaterThan(22258);
+    expect(res).toBeGreaterThan(34262);
+    expect(res).not.toBe(112188);
+    expect(res).toEqual(VALUE);
   });
 });
