@@ -3,7 +3,7 @@ const DAY = basename(__filename).replace(".spec.js", "");
 const { part1, part2, data } = require(`./${DAY}`);
 
 describe(DAY.replace("-", " "), () => {
-  test.skip("Part 1", () => {
+  test("Part 1", () => {
     // test for test data
     expect(part1(data("test"))).toEqual(142);
 
@@ -13,7 +13,7 @@ describe(DAY.replace("-", " "), () => {
 
   test("Part 2", () => {
     // test for test data
-    expect(part2(data("test"))).toEqual(281);
+    expect(part2(data("test-2"))).toEqual(281);
 
     // test for real data
     expect(part2(data())).toEqual(54875);

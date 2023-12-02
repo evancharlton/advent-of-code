@@ -1,10 +1,9 @@
 const data = (type = "") => {
-  return require("./input")(__filename, "\n", type);
+  return require("./input")(__filename, "\n", type).filter(Boolean);
 };
 
 const part1 = (lines) => {
   return lines
-    .filter((line) => !!line)
     .map((line) => {
       try {
         const [_, first] = line.match(/^[a-z]*([\d])/);
@@ -32,7 +31,6 @@ const part2 = (lines) => {
   };
 
   return lines
-    .filter((line) => !!line)
     .map((line) => {
       const first = (() => {
         for (let i = 0; i < line.length; i += 1) {

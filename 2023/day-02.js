@@ -1,9 +1,5 @@
 const data = (type = "") => {
-  return require("./input")(__filename, "\n", type);
-};
-
-const part1 = (lines) => {
-  return lines
+  return require("./input")(__filename, "\n", type)
     .filter(Boolean)
     .map((line) => {
       const [_, id, data] = line.match(/^Game ([\d]+): (.+)$/);
@@ -17,7 +13,11 @@ const part1 = (lines) => {
         }, {})
       );
       return { id, hands };
-    })
+    });
+};
+
+const part1 = (games) => {
+  return games
     .filter(({ hands }) => {
       return hands.every(({ red = 0, green = 0, blue = 0 }) => {
         return red <= 12 && green <= 13 && blue <= 14;
@@ -27,22 +27,8 @@ const part1 = (lines) => {
     .reduce((acc, v) => acc + v);
 };
 
-const part2 = (lines) => {
-  return lines
-    .filter(Boolean)
-    .map((line) => {
-      const [_, id, data] = line.match(/^Game ([\d]+): (.+)$/);
-      const hands = data.split(";").map((info) =>
-        info.split(",").reduce((acc, cubes) => {
-          const [num, color] = cubes.trim().split(" ");
-          return {
-            ...acc,
-            [color]: +num,
-          };
-        }, {})
-      );
-      return { id, hands };
-    })
+const part2 = (games) => {
+  return games
     .map((info) => {
       return info.hands.reduce(
         (acc, { red = 0, green = 0, blue = 0 }) => {
