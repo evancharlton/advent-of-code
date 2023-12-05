@@ -1,3 +1,4 @@
+const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -20,3 +21,5 @@ fs.copyFileSync(
 
 fs.writeFileSync(path.join(yearDir, "input", `day-${date}.txt`), "");
 fs.writeFileSync(path.join(yearDir, "input", `day-${date}.test.txt`), "");
+
+execSync(`git add ${yearDir}/day-${date}.*`);
