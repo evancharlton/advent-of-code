@@ -1,5 +1,5 @@
 const data = (type = "") => {
-  return require("./input")(__filename, "\n", type);
+  return require("./input")(__filename, { type, trim: true });
 };
 
 const part1 = (lines) => {

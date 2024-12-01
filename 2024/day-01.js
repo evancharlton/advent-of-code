@@ -1,5 +1,5 @@
 const data = (type = "") => {
-  return require("./input")(__filename, "\n", type)
+  return require("./input")(__filename, { type, trim: true })
     .map((line) => line.split(/\s+/))
     .reduce(
       ([o, n], [a, b]) => {
@@ -9,30 +9,23 @@ const data = (type = "") => {
       },
       [[], []]
     )
-    .map((x) => {
-      return x.sort();
-    });
+    .map((x) => x.sort());
 };
 
 const part1 = ([o, n]) => {
-  return o.reduce((sum, a, i) => {
-    return sum + Math.abs(a - n[i]);
-  }, 0);
+  return o.reduce((sum, a, i) => sum + Math.abs(a - n[i]), 0);
 };
 
 const part2 = ([o, n]) => {
-  return o.reduce((score, a) => {
-    return (
-      score +
-      a *
-        n.reduce((count, b) => {
-          if (b !== a) {
-            return count;
-          }
-          return count + 1;
-        }, 0)
-    );
-  }, 0);
+  const lookup = n.reduce(
+    (acc, b) => ({
+      ...acc,
+      [b]: (acc[b] || 0) + 1,
+    }),
+    {}
+  );
+
+  return o.reduce((score, a) => score + a * (lookup[a] || 0), 0);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
