@@ -1,3 +1,5 @@
+const { sanity } = require("../library/sanity");
+
 const data = (type = "") => {
   const [rules, update] = require("./input")(__filename, {
     type,
@@ -64,11 +66,9 @@ const part2 = ({ rules, update }) => {
     const N = job.length;
     const correct = [];
 
-    let limiter = 2000;
+    const limit = sanity(2000);
     while (correct.length < N) {
-      if (limiter-- <= 0) {
-        throw new Error("Sanity-break");
-      }
+      limit();
       const page = job.shift();
       if (correct.length === 0) {
         correct.push(page);
