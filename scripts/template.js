@@ -4,8 +4,18 @@ const path = require("path");
 
 const now = new Date();
 
-const date = `0${process.argv[2] ?? now.getDate() + 1}`.substr(-2);
-const year = process.argv[3] ?? String(now.getFullYear());
+const [date, year] = (() => {
+  const d =
+    process.argv[2] === "today"
+      ? now.getDate()
+      : process.argv[2] === undefined
+      ? now.getDate() + 1
+      : process.argv[2];
+
+  const date = `0${d}`.substr(-2);
+  const year = process.argv[3] ?? String(now.getFullYear());
+  return [date, year];
+})();
 
 const yearDir = path.resolve(path.join(__dirname, "..", year));
 

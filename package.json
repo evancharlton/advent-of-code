@@ -7,6 +7,7 @@
     "fetch": "node scripts/get-input",
     "leaderboard": "node scripts/leaderboard",
     "test": "jest",
+    "today": "node scripts/template today",
     "tomorrow": "node scripts/template"
   },
   "repository": {
