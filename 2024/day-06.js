@@ -29,7 +29,7 @@ const TURNS = {
   "<": "^",
 };
 
-const part1 = ({ grid, guard }) => {
+const walk = ({ grid, guard }) => {
   const check = sanity(1_000_000);
   const pos = new Set([`${guard.x},${guard.y}`]);
 
@@ -67,7 +67,11 @@ const part1 = ({ grid, guard }) => {
     guard.y += next.y;
   }
 
-  return pos.size;
+  return pos;
+};
+
+const part1 = ({ grid, guard }) => {
+  return walk({ grid, guard }).size;
 };
 
 const part2 = ({ grid: startGrid, guard: startGuard }) => {
@@ -114,26 +118,27 @@ const part2 = ({ grid: startGrid, guard: startGuard }) => {
     }
   };
 
+  const cellSet = walk({ grid: startGrid, guard: { ...startGuard } });
+  const xy = [...cellSet].map((xy) => xy.split(",").map((v) => +v));
+
   let totalLoops = 0;
-  for (let y = 0; y < startGrid.length; y += 1) {
-    for (let x = 0; x < startGrid[y].length; x += 1) {
-      if (startGrid[y][x] !== ".") {
-        continue;
-      }
+  for (const [x, y] of xy) {
+    if (startGrid[y][x] !== ".") {
+      continue;
+    }
 
-      const copy = startGrid.map((line, y1) => {
-        if (y1 !== y) {
-          return line;
-        }
-        const splat = line.split("");
-        splat[x] = "O";
-        return splat.join("");
-      });
-
-      const loops = willLoop(copy, { ...startGuard });
-      if (loops) {
-        totalLoops += 1;
+    const copy = startGrid.map((line, y1) => {
+      if (y1 !== y) {
+        return line;
       }
+      const splat = line.split("");
+      splat[x] = "O";
+      return splat.join("");
+    });
+
+    const loops = willLoop(copy, { ...startGuard });
+    if (loops) {
+      totalLoops += 1;
     }
   }
 
