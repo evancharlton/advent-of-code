@@ -42,7 +42,57 @@ const part1 = (lines) => {
 };
 
 const part2 = (lines) => {
-  return undefined;
+  const operators = [""];
+
+  return lines
+    .sort((a, b) => a.length - b.length)
+    .map((line) => {
+      const [total, start, ...values] = line;
+
+      while (operators[0].length < values.length) {
+        for (let i = 0; i < values.length; i += 1) {
+          const N = operators.length;
+          for (let o = 0; o < N; o += 1) {
+            const first = operators.shift();
+            operators.push(
+              `${first}a`, // add
+              `${first}m`, // multiply
+              `${first}c` // concat
+            );
+          }
+        }
+      }
+
+      for (const operatorOrder of operators) {
+        let value = start;
+        for (let i = 0; i < values.length; i += 1) {
+          const operator = operatorOrder[i];
+          switch (operator) {
+            case "a": {
+              value += values[i];
+              break;
+            }
+            case "m": {
+              value *= values[i];
+              break;
+            }
+            case "c": {
+              value = +`${value}${values[i]}`;
+              break;
+            }
+          }
+          if (value > total) {
+            break;
+          }
+        }
+        if (total === value) {
+          return total;
+        }
+      }
+      return -1;
+    })
+    .filter((v) => v >= 0)
+    .reduce((acc, v) => acc + v, 0);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
