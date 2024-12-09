@@ -32,12 +32,6 @@ const part1 = (map) => {
           break;
         }
 
-        if (end <= i) {
-          // We've reached the end of the disk - from here on out, it's all
-          // going to be empty .. except for maybe the next block? Something
-          // like that, anyway.
-        }
-
         const endId = Math.floor(end / 2);
         checksum += pointer * endId;
         map[end] -= 1;
@@ -49,8 +43,38 @@ const part1 = (map) => {
   return checksum;
 };
 
-const part2 = (lines) => {
-  return undefined;
+const part2 = (map) => {
+  let checksum = 0;
+
+  const blockOffsets = map.reduce(
+    (acc, v) => [...acc, (acc[acc.length - 1] ?? 0) + v],
+    [0]
+  );
+
+  for (let i = map.length - 1; i >= 0; i -= 2) {
+    const fileSize = map[i];
+    const fileId = i / 2;
+    // Scan from the right and place the files
+    let newHome = i;
+    for (let j = 1; j < i; j += 2) {
+      if (map[j] >= fileSize) {
+        // We can move a file here
+        newHome = j;
+        break;
+      }
+    }
+
+    map[newHome] -= fileSize;
+    map[i] = 0;
+
+    // Update the checksum accordingly
+    for (let k = 0; k < fileSize; k += 1) {
+      checksum += blockOffsets[newHome] * fileId;
+      blockOffsets[newHome] += 1;
+    }
+  }
+
+  return checksum;
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {

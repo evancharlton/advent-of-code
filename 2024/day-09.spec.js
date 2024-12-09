@@ -19,7 +19,7 @@ describe(DAY.replace("-", " "), () => {
 
   test("Part 2", () => {
     const TEST_VALUE = 2858;
-    const VALUE = undefined;
+    const VALUE = 6547228115826;
 
     // test for test data
     expect(part2(data("test"))).toEqual(TEST_VALUE);
