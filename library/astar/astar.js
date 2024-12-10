@@ -1,6 +1,17 @@
 const pq = require("./pq");
 const getPath = require("./getPath");
 
+/**
+ *
+ * @param {{
+ *   neighbors: (unknown) => T[],
+ *   weight: (T) => number,
+ *   start: T,
+ *   goal: (T) => boolean,
+ *   h: (T) => number,
+ * }} args
+ * @returns
+ */
 const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
   const queue = pq(start);
   const cameFrom = new Map();
