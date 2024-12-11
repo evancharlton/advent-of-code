@@ -18,20 +18,35 @@ const operate = (stone) => {
   return stone * 2024;
 };
 
-const blink = (stones) => {
-  return stones.map((stone) => operate(stone)).flat();
+const blink = (startingStones, times) => {
+  let stones = [...startingStones];
+  for (let i = 0; i < times; i += 1) {
+    stones = stones.map((stone) => operate(stone)).flat();
+  }
+  return stones;
 };
 
 const part1 = (startingStones) => {
-  let stones = [...startingStones];
-  for (let i = 0; i < 25; i += 1) {
-    stones = blink(stones);
-  }
-  return stones.length;
+  return blink(startingStones, 25).length;
 };
 
-const part2 = (startingStones) => {
-  return undefined;
+/** {@code stone@times} -> number */
+const CACHE = new Map();
+
+const part2 = (startingStones, times = 75) => {
+  if (times === 0) {
+    return startingStones.length;
+  }
+  return startingStones.reduce((total, stone) => {
+    const key = `${stone}@${times}`;
+    if (CACHE.has(key)) {
+      return total + CACHE.get(key);
+    }
+
+    const result = part2([operate(stone)].flat(), times - 1);
+    CACHE.set(key, result);
+    return total + result;
+  }, 0);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {

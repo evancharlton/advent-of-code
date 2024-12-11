@@ -15,9 +15,9 @@ describe(DAY.replace("-", " "), () => {
   });
 
   test("Part 2", () => {
-    const VALUE = undefined;
+    expect(part2(data("test"), 6)).toEqual(22);
+    expect(part2(data("test"), 25)).toEqual(55312);
 
-    // test for real data
-    expect(part2(data())).toEqual(VALUE);
+    expect(part2(data())).toEqual(236804088748754);
   });
 });
