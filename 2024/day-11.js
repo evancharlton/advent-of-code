@@ -18,16 +18,8 @@ const operate = (stone) => {
   return stone * 2024;
 };
 
-const blink = (startingStones, times) => {
-  let stones = [...startingStones];
-  for (let i = 0; i < times; i += 1) {
-    stones = stones.map((stone) => operate(stone)).flat();
-  }
-  return stones;
-};
-
 const part1 = (startingStones) => {
-  return blink(startingStones, 25).length;
+  return part2(startingStones, 25);
 };
 
 /** {@code stone@times} -> number */
