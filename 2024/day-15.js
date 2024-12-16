@@ -65,8 +65,6 @@ const print = ({ width, height, ...map }, { x: refX = -1, y: refY = -1, msg = ''
 }
 
 const part1 = ({ instructions, map: startMap }) => {
-  print(startMap, { msg: 'start' })
-
   let map = { ...startMap }
   const check = sanity(200_000);
   for (const instruction of instructions) {

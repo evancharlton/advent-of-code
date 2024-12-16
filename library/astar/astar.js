@@ -4,15 +4,15 @@ const getPath = require("./getPath");
 /**
  *
  * @param {{
- *   neighbors: (unknown) => T[],
- *   weight: (T) => number,
+ *   neighbors: (T) => T[],
+ *   weight: (neighbor: T, current: T, (max: number) => T[]) => number,
  *   start: T,
  *   goal: (T) => boolean,
  *   h: (T) => number,
  * }} args
  * @returns
  */
-const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
+const astar = ({ neighbors: getNeighbors, weight, start, goal, h, sanityCheck = () => true }) => {
   const queue = pq(start);
   const cameFrom = new Map();
 
@@ -24,7 +24,7 @@ const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
   const f = (key) => fScore.get(key) ?? Number.MAX_SAFE_INTEGER;
   fScore.set(start, h(start));
 
-  while (queue.length() > 0) {
+  while (queue.length() > 0 && sanityCheck()) {
     const current = queue.take();
     if (goal(current)) {
       return getPath(cameFrom, current);
@@ -33,7 +33,7 @@ const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
     const neighbors = getNeighbors(current);
     for (let i = 0; i < neighbors.length; i += 1) {
       const neighbor = neighbors[i];
-      const tentativeScore = g(current) + weight(neighbor);
+      const tentativeScore = g(current) + weight(neighbor, current, (n) => getPath(cameFrom, current, n));
       if (tentativeScore < g(neighbor)) {
         cameFrom.set(neighbor, current);
         gScore.set(neighbor, tentativeScore);
@@ -43,7 +43,7 @@ const astar = ({ neighbors: getNeighbors, weight, start, goal, h }) => {
     }
   }
 
-  throw new Error(`No path found: astar(${start}, ${goal})`);
+  throw new Error(`No path found: astar(..)`);
 };
 
 module.exports = astar;
