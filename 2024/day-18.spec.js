@@ -16,11 +16,11 @@ describe(DAY.replace("-", " "), () => {
   });
 
   test("Part 2", () => {
-    const TEST_VALUE = undefined;
-    const VALUE = undefined;
+    const TEST_VALUE = "6,1";
+    const VALUE = "8,51";
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST_VALUE);
+    expect(part2(data("test"), { size: 7, cap: 12 })).toEqual(TEST_VALUE);
 
     // test for real data
     expect(part2(data())).toEqual(VALUE);

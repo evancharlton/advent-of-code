@@ -9,14 +9,16 @@ const data = (type = "") => {
 
 const part1 = (lines, { size = 71, cap = 1024 } = {}) => {
   const check = sanity(Math.pow(size, 3));
-  const grid = lines.slice(0, cap).reduce((acc, xy) => ({ ...acc, [xy.join(",")]: "#" }), {});
+  const grid = lines
+    .slice(0, cap)
+    .reduce((acc, xy) => ({ ...acc, [xy.join(",")]: "#" }), {});
 
-  const visits = {}
+  const visits = {};
   const path = [];
   try {
     const steps = astar({
       neighbors: (xy) => {
-        const [x, y] = xy.split(',').map(v => +v)
+        const [x, y] = xy.split(",").map((v) => +v);
         const n = [
           [x + 0, y - 1],
           [x + 1, y + 0],
@@ -25,28 +27,28 @@ const part1 = (lines, { size = 71, cap = 1024 } = {}) => {
         ]
           .filter(([x, y]) => x >= 0 && x < size && y >= 0 && y < size)
           .filter((xy) => grid[xy.join(",")] !== "#")
-          .map(xy => xy.join(','))
+          .map((xy) => xy.join(","));
 
         for (const neighbor of n) {
-          visits[neighbor] = (visits[neighbor] ?? 0) + 1
+          visits[neighbor] = (visits[neighbor] ?? 0) + 1;
         }
 
         // console.log(`[${xy}] -> ${n.join(' ')}`)
-        return n
+        return n;
       },
       weight: (xy) => 1,
       start: "0,0",
-      goal: xy => {
-        const [x, y] = xy.split(',').map(v => +v)
+      goal: (xy) => {
+        const [x, y] = xy.split(",").map((v) => +v);
         return x === size - 1 && y === size - 1;
       },
-      h: xy => {
-        const [x, y] = xy.split(',').map(v => +v)
+      h: (xy) => {
+        const [x, y] = xy.split(",").map((v) => +v);
         return Math.abs(size - x) + Math.abs(size - y);
       },
       sanityCheck: check,
     });
-    path.push(...steps)
+    path.push(...steps);
   } finally {
     // const pathMap = path.reduce((acc, xy) => ({ ...acc, [xy]: '⨯' }), {})
     // const output = []
@@ -61,18 +63,36 @@ const part1 = (lines, { size = 71, cap = 1024 } = {}) => {
     // console.log(`\n${output.join('\n')}`)
   }
 
-  return path.length - 1
+  return path.length - 1;
 };
 
-const part2 = (lines) => {
-  return undefined;
+const part2 = (lines, { size = 71, cap = 1024 } = {}) => {
+  let good = cap;
+  let bad = lines.length;
+  const check = sanity(lines.length);
+  while (check()) {
+    const b = Math.floor((bad - good) / 2) + good;
+    try {
+      part1(lines, { size, cap: b });
+      good = b;
+    } catch {
+      if (good === b - 1) {
+        return lines[b - 1].join(",");
+      }
+      bad = b;
+    }
+  }
+  return -1;
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
   const tweaks = {
-    test: { size: 7, cap: 12 }
-  }
-  console.log(`Part 1:`, part1(data(process.argv[2] || ""), tweaks[process.argv[2]]));
+    test: { size: 7, cap: 12 },
+  };
+  console.log(
+    `Part 1:`,
+    part1(data(process.argv[2] || ""), tweaks[process.argv[2]]),
+  );
   console.log(`Part 2:`, part2(data(process.argv[2] || "")));
 }
 
