@@ -6,29 +6,8 @@ const data = (type = "") => {
   }
 };
 
-const part1 = ({ requests, options }) => {
-  const examine = request => {
-    if (request.length === 0) {
-      return true;
-    }
-
-    const possibilities = options.filter(option => request.startsWith(option))
-    if (possibilities.length === false) {
-      return false;
-    }
-
-    return possibilities.some(poss => {
-      const remaining = request.substring(poss.length)
-      return examine(remaining)
-    })
-  }
-
-  return requests.map(examine).filter(Boolean).length
-};
-
-const part2 = ({ requests, options }) => {
+const examiner = (options) => {
   const cache = new Map();
-
   const examine = request => {
     if (request.length === 0) {
       return 1;
@@ -46,11 +25,19 @@ const part2 = ({ requests, options }) => {
       }
       return acc + cache.get(remaining)
     }, 0)
-  }
+  };
 
-  return requests.reduce((acc, request, i) => {
-    return acc + examine(request);
-  }, 0);
+  return examine
+}
+
+const part1 = ({ requests, options }) => {
+  const examine = examiner(options);
+  return requests.map(request => examine(request)).filter(v => v > 0).length;
+};
+
+const part2 = ({ requests, options }) => {
+  const examine = examiner(options);
+  return requests.reduce((acc, request) => acc + examine(request), 0);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
