@@ -14,8 +14,28 @@ const part1 = (turns) => {
   ).total;
 };
 
-const part2 = (lines) => {
-  return undefined;
+const part2 = (turns) => {
+  return turns.reduce(
+    ({ current, total }, num) => {
+      let nextTotal = total;
+      let next = current;
+      // TODO: I know I can do this with math and stuff but I gotta go get
+      //       breakfast started. Looking at the data set tells me that this
+      //       lazy approach will work this year, on this day.
+      for (let i = Math.abs(num); i != 0; i -= 1) {
+        next += num > 0 ? 1 : -1;
+        next %= 100;
+        next += 100;
+        next %= 100;
+        if (next === 0) {
+          nextTotal += 1;
+        }
+      }
+
+      return { current: next, total: nextTotal };
+    },
+    { current: 50, total: 0 }
+  ).total;
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
