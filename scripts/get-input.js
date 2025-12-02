@@ -37,7 +37,7 @@ http.get(
   url,
   {
     headers: {
-      cookie: `session=${process.env.AOC_COOKIE}`,
+      cookie: `session=${process.env.AOC_COOKIE.replace(/session=/, "")}`,
       "User-Agent":
         "github.com/evancharlton/advent-of-code by evancharlton@gmail.com",
     },
