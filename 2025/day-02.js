@@ -1,13 +1,33 @@
 const data = (type = "") => {
-  return require("./input")(__filename, { type, trim: true });
+  return require("./input")(__filename, { type, trim: true })[0]
+    .split(",")
+    .map((pair) => pair.split("-").map((v) => +v));
 };
 
-const part1 = (lines) => {
-  return undefined;
+const part1 = (ranges) => {
+  const invalidIds = [];
+  ranges.forEach(([low, high]) => {
+    for (let n = low; n <= high; n += 1) {
+      const id = String(n);
+      if (/^(.*)\1$/.test(id)) {
+        invalidIds.push(n);
+      }
+    }
+  });
+  return invalidIds.reduce((acc, n) => acc + n, 0);
 };
 
-const part2 = (lines) => {
-  return undefined;
+const part2 = (ranges) => {
+  const invalidIds = [];
+  ranges.forEach(([low, high]) => {
+    for (let n = low; n <= high; n += 1) {
+      const id = String(n);
+      if (/^(.*)(\1+)$/.test(id)) {
+        invalidIds.push(n);
+      }
+    }
+  });
+  return invalidIds.reduce((acc, n) => acc + n, 0);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
