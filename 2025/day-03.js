@@ -18,7 +18,24 @@ const part1 = (lines) => {
 };
 
 const part2 = (lines) => {
-  return undefined;
+  return lines.reduce((acc, bank) => {
+    const digits = [];
+    let pos = 0;
+    while (digits.length < 12) {
+      let max = -1;
+      let posMax = -1;
+      for (let i = pos; i <= bank.length - (12 - digits.length); i += 1) {
+        const value = bank[i];
+        if (value > max) {
+          max = value;
+          posMax = i;
+        }
+      }
+      digits.push(max);
+      pos = posMax + 1;
+    }
+    return acc + +digits.join("");
+  }, 0);
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
