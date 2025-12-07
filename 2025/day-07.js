@@ -36,8 +36,32 @@ const part1 = (grid) => {
   return splits;
 };
 
-const part2 = (lines) => {
-  return undefined;
+const part2 = (grid) => {
+  const cache = new Map();
+  const countOptions = (y, x) => {
+    if (!grid[y]) {
+      return 1;
+    }
+
+    if (!grid[y][x]) {
+      return 1;
+    }
+
+    const key = `${y},${x}`;
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+
+    if (grid[y][x] === "^") {
+      const res = countOptions(y + 1, x - 1) + countOptions(y + 1, x + 1);
+      cache.set(key, res);
+      return res;
+    }
+
+    return countOptions(y + 1, x);
+  };
+
+  return countOptions(1, grid[0].indexOf("S"));
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {

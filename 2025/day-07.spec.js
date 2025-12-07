@@ -15,10 +15,12 @@ describe(DAY.replace("-", " "), () => {
   });
 
   test("Part 2", () => {
-    const TEST_VALUE = undefined;
-    const VALUE = undefined;
+    const TEST_VALUE = 40;
+    const VALUE = 15650261281478;
 
     // test for test data
+    expect(part2(data("mini"))).toEqual(2);
+    expect(part2(data("merge"))).toEqual(4);
     expect(part2(data("test"))).toEqual(TEST_VALUE);
 
     // test for real data
