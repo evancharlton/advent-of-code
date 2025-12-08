@@ -67,8 +67,58 @@ const part1 = (boxes, limit = 1000) => {
     .reduce((acc, c) => acc * c.length, 1);
 };
 
-const part2 = () => {
-  return undefined;
+const part2 = (boxes) => {
+  const distanceBetween = ([x, y, z], [a, b, c]) =>
+    Math.sqrt(Math.pow(a - x, 2) + Math.pow(b - y, 2) + Math.pow(c - z, 2));
+
+  const pairs = [];
+  for (let aI = 0; aI < boxes.length; aI += 1) {
+    for (let bI = 0; bI < boxes.length; bI += 1) {
+      if (bI === aI) continue;
+
+      const a = boxes[aI];
+      const b = boxes[bI];
+
+      pairs.push([a.join(","), b.join(","), distanceBetween(a, b)]);
+    }
+  }
+
+  const closestPairs = pairs
+    .sort((a, b) => a[2] - b[2])
+    .filter((_, i) => i % 2 === 0);
+
+  const circuitLookup = new Map(); // <xyz, circuitIndex>
+  const circuits = boxes.map((xyz) => [xyz.join(",")]);
+  circuits.forEach(([id], i) => {
+    if (circuitLookup.has(id)) {
+      return;
+    }
+    circuitLookup.set(id, i);
+  });
+
+  while (true) {
+    for (const [a, b] of closestPairs) {
+      const aCircuitID = circuitLookup.get(a);
+      const bCircuitID = circuitLookup.get(b);
+
+      if (aCircuitID !== bCircuitID) {
+        // Separate circuits! Merge B's peers into A's circuit
+        const bNetwork = circuits[bCircuitID];
+        for (const peer of bNetwork) {
+          circuitLookup.set(peer, aCircuitID);
+        }
+        circuits[aCircuitID].push(...bNetwork);
+        bNetwork.length = 0;
+
+        if (circuits.filter((c) => c.length > 0).length === 1) {
+          return [a, b]
+            .map((id) => id.split(",").map((v) => +v))
+            .map(([x]) => x)
+            .reduce((acc, x) => acc * x);
+        }
+      }
+    }
+  }
 };
 
 if (process.argv.includes(__filename.replace(/\.[jt]s$/, ""))) {
