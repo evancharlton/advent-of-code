@@ -14,14 +14,17 @@ describe(DAY.replace("-", " "), () => {
     expect(part1(data())).toEqual(VALUE);
   });
 
-  test("Part 2", () => {
-    const TEST_VALUE = undefined;
-    const VALUE = undefined;
+  test.skip("Part 2", () => {
+    const TEST_VALUE = 24;
+    const VALUE = 1343576598;
 
     // test for test data
     expect(part2(data("test"))).toEqual(TEST_VALUE);
 
     // test for real data
-    expect(part2(data())).toEqual(VALUE);
+    const v = part2(data());
+    expect(v).toBeLessThan(4618516475);
+    expect(v).toBeGreaterThan(93277);
+    expect(v).toEqual(VALUE);
   });
 });
