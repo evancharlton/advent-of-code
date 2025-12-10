@@ -12,7 +12,14 @@ const getPath = require("./getPath");
  * }} args
  * @returns
  */
-const astar = ({ neighbors: getNeighbors, weight, start, goal, h, sanityCheck = () => true }) => {
+const astar = ({
+  neighbors: getNeighbors,
+  weight,
+  start,
+  goal,
+  h,
+  sanityCheck = () => true,
+}) => {
   const queue = pq(start);
   const cameFrom = new Map();
 
@@ -33,11 +40,19 @@ const astar = ({ neighbors: getNeighbors, weight, start, goal, h, sanityCheck = 
     const neighbors = getNeighbors(current);
     for (let i = 0; i < neighbors.length; i += 1) {
       const neighbor = neighbors[i];
-      const tentativeScore = g(current) + weight(neighbor, current, (n) => getPath(cameFrom, current, n));
+      const tentativeScore =
+        g(current) +
+        weight(neighbor, current, (n) => getPath(cameFrom, current, n));
       if (tentativeScore < g(neighbor)) {
         cameFrom.set(neighbor, current);
+        if (gScore.has(neighbor)) {
+          throw new Error(`Cannot overwrite gScore[${neighbor}]!`);
+        }
         gScore.set(neighbor, tentativeScore);
-        fScore.set(neighbor, tentativeScore + h(neighbor));
+        if (fScore.has(neighbor)) {
+          throw new Error(`Cannot overwrite fScore[${neighbor}]!`);
+        }
+        fScore.set(neighbor, tentativeScore + h(neighbor, current));
         queue.put(neighbor, f(neighbor));
       }
     }

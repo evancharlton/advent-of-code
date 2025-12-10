@@ -14,12 +14,12 @@ const pq = (...items) => {
     put: (key, value) => {
       scores.set(key, value);
 
-      if (value > scores.get(queue[queue.length - 1])) {
+      if (value >= scores.get(queue[queue.length - 1])) {
         queue.push(key);
         return;
       }
 
-      if (value < scores.get(queue[0])) {
+      if (value <= scores.get(queue[0])) {
         queue.unshift(key);
         return;
       }
