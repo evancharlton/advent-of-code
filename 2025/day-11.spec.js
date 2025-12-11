@@ -15,11 +15,11 @@ describe(DAY.replace("-", " "), () => {
   });
 
   test("Part 2", () => {
-    const TEST_VALUE = undefined;
-    const VALUE = undefined;
+    const TEST_VALUE = 2;
+    const VALUE = 377452269415704;
 
     // test for test data
-    expect(part2(data("test"))).toEqual(TEST_VALUE);
+    expect(part2(data("test2"))).toEqual(TEST_VALUE);
 
     // test for real data
     expect(part2(data())).toEqual(VALUE);
